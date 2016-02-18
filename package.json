@@ -1,0 +1,19 @@
+{
+  "name": "blockchain-anchor",
+  "version": "0.1.0",
+  "description": "A node module for embedding data into the Bitcoin blockchain.",
+  "main": "anchor.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tierion/blockchain-anchor.git"
+  },
+  "author": "Jason Bukowski <jason@tierion.com> (https://tierion.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Tierion/blockchain-anchor/issues"
+  },
+  "homepage": "https://github.com/Tierion/blockchain-anchor#readme"
+}
