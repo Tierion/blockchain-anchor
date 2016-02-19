@@ -15,5 +15,10 @@
   "bugs": {
     "url": "https://github.com/Tierion/blockchain-anchor/issues"
   },
-  "homepage": "https://github.com/Tierion/blockchain-anchor#readme"
+  "homepage": "https://github.com/Tierion/blockchain-anchor#readme",
+  "dependencies": {
+    "bitcoinjs-lib": "^2.2.0",
+    "lodash": "^4.5.0",
+    "unirest": "^0.4.2"
+  }
 }
