@@ -7,14 +7,14 @@ module.exports = {
         var service;
     
         // return the selected service, default to BlockCypher if service not found
-        switch (blockchainServiceName) {
-            case 'BlockCypher':
+        switch (blockchainServiceName.toLowerCase()) {
+            case 'blockcypher':
                 service = blockcypherSvc;
                 break;
-            case 'Blockr':
+            case 'blockr':
                 service = blockrSvc;
                 break;
-            case 'InsightBitpay':
+            case 'insightbitpay':
                 service = insightbitpaySvc;
                 break;
             default:
