@@ -25,15 +25,12 @@ class BlockchainAnchor {
     
         // check for feeSatoshi, default to 10000 if not defined
         this.feeSatoshi = feeSatoshi || 10000;
-        
+
         this.blockcypherToken = blockcypherToken;
-        if(!blockcypherToken) { // blockcypher token was not supplied, so remove from available services and abort if that is the service specified 
-            _.remove(SERVICES, function(x) {
+        if (!blockcypherToken) { // blockcypher token was not supplied, so remove from available services
+            _.remove(SERVICES, function (x) {
                 return x == 'blockcypher';
             });
-            if(blockchainServiceName == 'blockcypher') {
-                throw new Error('Token is required in order to use blockcypher service.')
-            }
         }
     }
     
@@ -45,10 +42,10 @@ class BlockchainAnchor {
         if (this.blockchainServiceName != 'Any') // a specific service was chosen, attempt once with that service
         {
             pushEmbedTx(this.blockchainServiceName, this.address, this.keyPair, this.feeSatoshi, hexData, this.useTestnet, this.blockcypherToken, function (err, result) {
-                if (err) { // error pushing transaction onto the network, throw exception
-                    throw new Error(err);
+                if (err) { // error pushing transaction onto the network, return exception
+                    callback(err);
                 } else { // success pushing transaction onto network, return the transactionId
-                    callback(result);
+                    callback(null, result);
                 }
             });
         } else { // use the first service option, continue with the next option upon failure until all have been attempted
@@ -58,7 +55,7 @@ class BlockchainAnchor {
 
             async.forEachSeries(SERVICES, function (blockchainServiceName, servicesCallback) {
                 pushEmbedTx(blockchainServiceName, that.address, that.keyPair, that.feeSatoshi, hexData, that.useTestnet, that.blockcypherToken, function (err, result) {
-                    if (err) { // error pushing transaction onto the network, throw exception
+                    if (err) { // error pushing transaction onto the network, return exception
                         errors.push(err);
                         servicesCallback();
                     } else { // success pushing transaction onto network, return the transactionId
@@ -67,10 +64,10 @@ class BlockchainAnchor {
                     }
                 });
             }, function (success) {
-                if (!success) { // none of the services returned successfully, throw exception
-                    throw new Error(errors.join('\n'));
+                if (!success) { // none of the services returned successfully, return exception
+                    callback(errors.join('\n'));
                 } else { // a service has succeeded and returned a new transactionId, return that id to caller
-                    callback(txId);
+                    callback(null, txId);
                 }
             });
         }
@@ -80,10 +77,10 @@ class BlockchainAnchor {
         if (this.blockchainServiceName != 'Any') // a specific service was chosen, attempt once with that service
         {
             pushSplitOutputsTx(this.blockchainServiceName, this.address, this.keyPair, maxOutputs, this.feeSatoshi, this.useTestnet, this.blockcypherToken, function (err, result) {
-                if (err) { // error pushing transaction onto the network, throw exception
-                    throw new Error(err);
+                if (err) { // error pushing transaction onto the network, return exception
+                    callback(err);
                 } else { // success pushing transaction onto network, return the transactionId
-                    callback(result);
+                    callback(null, result);
                 }
             });
         } else { // use the first service option, continue with the next option upon failure until all have been attempted
@@ -93,7 +90,7 @@ class BlockchainAnchor {
 
             async.forEachSeries(SERVICES, function (blockchainServiceName, servicesCallback) {
                 pushSplitOutputsTx(that.blockchainServiceName, that.address, that.keyPair, maxOutputs, that.feeSatoshi, that.useTestnet, that.blockcypherToken, function (err, result) {
-                    if (err) { // error pushing transaction onto the network, throw exception
+                    if (err) { // error pushing transaction onto the network, return exception
                         errors.push(err);
                         servicesCallback();
                     } else { // success pushing transaction onto network, return the transactionId
@@ -102,10 +99,10 @@ class BlockchainAnchor {
                     }
                 });
             }, function (success) {
-                if (!success) { // none of the services returned successfully, throw exception
-                    throw new Error(errors.join('\n'));
+                if (!success) { // none of the services returned successfully, return exception
+                    callback(errors.join('\n'));
                 } else { // a service has succeeded and returned a new transactionId, return that id to caller
-                    callback(txId);
+                    callback(null, txId);
                 }
             });
         }
@@ -115,10 +112,10 @@ class BlockchainAnchor {
         if (this.blockchainServiceName != 'Any') // a specific service was chosen, attempt once with that service
         {
             confirmOpReturn(this.blockchainServiceName, transactionId, expectedValue, this.useTestnet, this.blockcypherToken, function (err, result) {
-                if (err) { // error pushing transaction onto the network, throw exception
-                    throw new Error(err);
+                if (err) { // error pushing transaction onto the network, return exception
+                    callback(err);
                 } else { // success pushing transaction onto network, return the transactionId
-                    callback(result);
+                    callback(null, result);
                 }
             });
         } else { // use the first service option, continue with the next option upon failure until all have been attempted
@@ -128,7 +125,7 @@ class BlockchainAnchor {
 
             async.forEachSeries(SERVICES, function (blockchainServiceName, servicesCallback) {
                 confirmOpReturn(blockchainServiceName, transactionId, expectedValue, that.useTestnet, that.blockcypherToken, function (err, result) {
-                    if (err) { // error pushing transaction onto the network, throw exception
+                    if (err) { // error pushing transaction onto the network, return exception
                         errors.push(err);
                         servicesCallback();
                     } else { // success pushing transaction onto network, return the transactionId
@@ -137,10 +134,10 @@ class BlockchainAnchor {
                     }
                 });
             }, function (success) {
-                if (!success) { // none of the services returned successfully, throw exception
-                    throw new Error(errors.join('\n'));
+                if (!success) { // none of the services returned successfully, return exception
+                    callback(errors.join('\n'));
                 } else { // a service has succeeded and returned a new transactionId, return that id to caller
-                    callback(isConfirmed);
+                    callback(null, isConfirmed);
                 }
             });
 
@@ -252,7 +249,7 @@ function pushSplitOutputsTx(blockchainServiceName, address, keyPair, maxOutputs,
                 } else {
                     wfCallback(null, transactionId);
                 }
-            }); 
+            });
         }
     ], function (err, result) {
         callback(err, result);
