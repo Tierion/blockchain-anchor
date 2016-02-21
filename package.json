@@ -1,6 +1,6 @@
 {
   "name": "blockchain-anchor",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "A Node.js module for embedding data into the Bitcoin blockchain.",
   "keywords": ["blockchain", "opreturn", "bitcoin", "btc"],
   "main": "blockchainanchor.js",
