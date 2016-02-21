@@ -64,10 +64,13 @@ anchor.confirm(txId, hexData, function (err, result) {
 
 ### Split Outputs
 
-Divides or consolidates your unspent outputs to an amount you set, returning a transaction id.
+Divides or consolidates your unspent outputs to an amount you set, returning a transaction id. If the resulting balance per output is less that 10000 satoshi, the number of outputs will be decreased until the balance per output exceeds that value.
 
 ```js
-anchor.splitOutputs(10, function (err, result) {
+
+var maxOutputs = 10;
+
+anchor.splitOutputs(maxOutputs, function (err, result) {
   if(err) {
     // do something
   } else {
