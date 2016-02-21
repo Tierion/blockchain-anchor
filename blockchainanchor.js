@@ -66,36 +66,38 @@ class BlockchainAnchor {
         }
     }
 
-    splitOutputs(maxOutputs) {
-        var result;
+    splitOutputs(maxOutputs, callback) {
         if (this.blockchainServiceName != 'Any') // a specific service was chosen, attempt once with that service
         {
-            result = pushSplitOutputsTx(this.blockchainServiceName, this.address, maxOutputs, this.useTestnet);
-            if (result.hasError) { // error pushing transaction onto the network, throw exception
-                throw result.message;
-            } else { // success pushing transaction onto network, return the transactionId
-                return result.txId;
-            }
+            pushSplitOutputsTx(this.blockchainServiceName, this.address, this.keyPair, maxOutputs, this.feeSatoshi, this.useTestnet, function (err, result) {
+                if (err) { // error pushing transaction onto the network, throw exception
+                    throw new Error(err);
+                } else { // success pushing transaction onto network, return the transactionId
+                    callback(result);
+                }
+            });
         } else { // use the first service option, continue with the next option upon failure until all have been attempted
             var errors = [];
             var txId = 0;
-            var useTestnet = this.useTestnet;
+            var that = this;
 
-            _(SERVICES).each(function (blockchainServiceName) {
-                result = pushSplitOutputsTx(blockchainServiceName, this.address, maxOutputs, useTestnet);
-                if (result.hasError) { // error pushing transaction onto the network, add exception to error array
-                    errors.push(result.message);
-                } else { // success pushing transaction onto network, set the transactionId and return false to break foreach
-                    txId = result.txId;
-                    return false;
+            async.forEachSeries(SERVICES, function (blockchainServiceName, servicesCallback) {
+                pushSplitOutputsTx(that.blockchainServiceName, that.address, that.keyPair, maxOutputs, that.feeSatoshi, that.useTestnet, function (err, result) {
+                    if (err) { // error pushing transaction onto the network, throw exception
+                        errors.push(err);
+                        servicesCallback();
+                    } else { // success pushing transaction onto network, return the transactionId
+                        txId = result;
+                        servicesCallback(true); // sending true, indicating success, as an error to break out of the foreach loop
+                    }
+                });
+            }, function (success) {
+                if (!success) { // none of the services returned successfully, throw exception
+                    throw new Error(errors.join('\n'));
+                } else { // a service has succeeded and returned a new transactionId, return that id to caller
+                    callback(txId);
                 }
             });
-
-            if (txId == 0) { // none of the services returned successfully, throw exception
-                throw errors.join('\n');
-            } else { // a service has succeeded and returned a new transactionId, return that id to caller
-                return txId;
-            }
         }
     }
 
@@ -135,7 +137,6 @@ class BlockchainAnchor {
 
         }
     }
-
 }
 
 ////////////////////////////////////////////
@@ -143,7 +144,7 @@ class BlockchainAnchor {
 ////////////////////////////////////////////
 
 function pushEmbedTx(blockchainServiceName, address, keyPair, feeSatoshi, hexData, useTestnet, callback) {
-    // get an instacne of the selected service
+    // get an instance of the selected service
     var blockchainService = utils.getBlockchainService(blockchainServiceName);
 
     async.waterfall([
@@ -192,19 +193,64 @@ function pushEmbedTx(blockchainServiceName, address, keyPair, feeSatoshi, hexDat
     });
 }
 
-function pushSplitOutputsTx(blockchainServiceName, address, maxOutputs, useTestnet) {
-    // get an instacne of the selected service
+function pushSplitOutputsTx(blockchainServiceName, address, keyPair, maxOutputs, feeSatoshi, useTestnet, callback) {
+    // get an instacnce of the selected service
     var blockchainService = utils.getBlockchainService(blockchainServiceName);
-    
-    // get an array of the unspent outputs
-    var unspentResult = blockchainService.getUnspentOutputs(address, useTestnet);
-    if (unspentResult.hasError) return { hasError: true, message: unspentResult.message };
 
-    return { hasError: false, message: 'success', txId: '123456789' };
+    async.waterfall([
+        function (wfCallback) {
+            blockchainService.getUnspentOutputs(address, useTestnet, function (err, unspentOutputs) {
+                if (err) {
+                    wfCallback(err);
+                } else {
+                    wfCallback(null, unspentOutputs);
+                }
+            });
+        },
+        function (unspentOutputs, wfCallback) {
+            var newOutputCount = maxOutputs;
+            var totalBalanceSatoshi = _.sumBy(unspentOutputs, function (x) { return x.amountSatoshi }); // value of all unspent outputs
+            var workingBalanceSatoshi = totalBalanceSatoshi - feeSatoshi; // deduct the fee, the remainder is to be divided amongst the outputs
+            var perOutputAmountSatoshi = _.floor(workingBalanceSatoshi / newOutputCount); // amount for each output
+            while (perOutputAmountSatoshi < 10000) {
+                if (--newOutputCount < 1) {
+                    wfCallback('Not enough funds to complete transaction');
+                    return;
+                }
+                perOutputAmountSatoshi = workingBalanceSatoshi / newOutputCount;
+            }
+
+            var tx = new bitcoin.TransactionBuilder(useTestnet ? bitcoin.networks.testnet : bitcoin.networks.bitcoin);
+
+            _(unspentOutputs).forEach(function (spendableOutput) {
+                tx.addInput(spendableOutput.fromTxHash, spendableOutput.outputIndex);
+            });
+
+            for (var x = 0; x < newOutputCount; x++) {
+                tx.addOutput(address, perOutputAmountSatoshi);
+            }
+
+            for (var x = 0; x < tx.inputs.length; x++) {
+                tx.sign(x, keyPair);
+            }
+
+            var transactionHex = tx.build().toHex();
+
+            blockchainService.pushTransaction(transactionHex, useTestnet, function (err, transactionId) {
+                if (err) {
+                    wfCallback(err);
+                } else {
+                    wfCallback(null, transactionId);
+                }
+            }); 
+        }
+    ], function (err, result) {
+        callback(err, result);
+    });
 }
 
 function confirmOpReturn(blockchainServiceName, transactionId, expectedValue, useTestnet, callback) {
-    // get an instacne of the selected service
+    // get an instance of the selected service
     var blockchainService = utils.getBlockchainService(blockchainServiceName);
     blockchainService.confirmOpReturn(transactionId, expectedValue, useTestnet, function (err, result) {
         callback(err, result);
