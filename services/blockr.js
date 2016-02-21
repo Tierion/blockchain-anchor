@@ -2,7 +2,7 @@ var _ = require('lodash');
 var unirest = require('unirest');
 
 module.exports = {
-    getUnspentOutputs: function (address, useTestnet, callback) {
+    getUnspentOutputs: function (address, useTestnet, token, callback) {
         var targetUrl = 'https://' + (useTestnet ? 'tbtc' : 'btc') + '.blockr.io/api/v1/address/unspent/' + address + '?unconfirmed=1';
 
         unirest.get(targetUrl).end(function (result) {
@@ -26,7 +26,7 @@ module.exports = {
             }
         });
     },
-    pushTransaction: function (transactionHex, useTestnet, callback) {
+    pushTransaction: function (transactionHex, useTestnet, token, callback) {
         unirest.post('https://' + (useTestnet ? 'tbtc' : 'btc') + '.blockr.io/api/v1/tx/push')
             .header('Content-Type', 'application/json')
             .send({ 'hex': transactionHex })
@@ -43,7 +43,7 @@ module.exports = {
                 }                
             });
     },
-    confirmOpReturn: function (transactionId, expectedValue, useTestnet, callback) {
+    confirmOpReturn: function (transactionId, expectedValue, useTestnet, token, callback) {
         var targetUrl = 'http://' + (useTestnet ? 'tbtc' : 'btc') + '.blockr.io/api/v1/tx/info/' + transactionId;
 
         unirest.get(targetUrl).end(function (result) {

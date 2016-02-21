@@ -1,5 +1,0 @@
-var config = {};
-
-config.blockcypherToken = 'YOUR BLOCKCYPHER TOKEN HERE';
-
-module.exports = config;

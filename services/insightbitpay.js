@@ -2,7 +2,7 @@ var _ = require('lodash');
 var unirest = require('unirest');
 
 module.exports = {
-    getUnspentOutputs: function (address, useTestnet, callback) {
+    getUnspentOutputs: function (address, useTestnet, token, callback) {
         var targetUrl = 'https://' + (useTestnet ? 'test-' : '') + 'insight.bitpay.com/api/addr/' + address + '/utxo?noCache=1';
 
         unirest.get(targetUrl).end(function (result) {
@@ -24,7 +24,7 @@ module.exports = {
             }
         });
     },
-    pushTransaction: function (transactionHex, useTestnet, callback) {
+    pushTransaction: function (transactionHex, useTestnet, token, callback) {
         unirest.post('https://' + (useTestnet ? 'test-' : '') + 'insight.bitpay.com/api/tx/send')
             .header('Content-Type', 'application/json')
             .send({ 'rawtx': transactionHex })
@@ -41,7 +41,7 @@ module.exports = {
                 }                
             });
     },
-    confirmOpReturn: function (transactionId, expectedValue, useTestnet, callback) {
+    confirmOpReturn: function (transactionId, expectedValue, useTestnet, token, callback) {
         var targetUrl = 'https://' + (useTestnet ? 'test-' : '') + 'insight.bitpay.com/api/tx/' + transactionId;
 
         unirest.get(targetUrl).end(function (result) {

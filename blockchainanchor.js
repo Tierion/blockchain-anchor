@@ -8,7 +8,7 @@ var utils = require('./helpers/utils.js');
 var SERVICES = ['blockcypher', 'blockr', 'insightbitpay'];
 
 class BlockchainAnchor {
-    constructor(privateKeyWIF, useTestnet, blockchainServiceName, feeSatoshi) {    
+    constructor(privateKeyWIF, useTestnet, blockchainServiceName, feeSatoshi, blockcypherToken) {    
         // when useTestnet set to true, TestNet is used, otherwise defaults to Mainnet
         this.network = useTestnet ? bitcoin.networks.testnet : bitcoin.networks.bitcoin;
         this.useTestnet = useTestnet;
@@ -25,6 +25,16 @@ class BlockchainAnchor {
     
         // check for feeSatoshi, default to 10000 if not defined
         this.feeSatoshi = feeSatoshi || 10000;
+        
+        this.blockcypherToken = blockcypherToken;
+        if(!blockcypherToken) { // blockcypher token was not supplied, so remove from available services and abort if that is the service specified 
+            _.remove(SERVICES, function(x) {
+                return x == 'blockcypher';
+            });
+            if(blockchainServiceName == 'blockcypher') {
+                throw new Error('Token is required in order to use blockcypher service.')
+            }
+        }
     }
     
     ////////////////////////////////////////////
@@ -34,7 +44,7 @@ class BlockchainAnchor {
     embed(hexData, callback) {
         if (this.blockchainServiceName != 'Any') // a specific service was chosen, attempt once with that service
         {
-            pushEmbedTx(this.blockchainServiceName, this.address, this.keyPair, this.feeSatoshi, hexData, this.useTestnet, function (err, result) {
+            pushEmbedTx(this.blockchainServiceName, this.address, this.keyPair, this.feeSatoshi, hexData, this.useTestnet, this.blockcypherToken, function (err, result) {
                 if (err) { // error pushing transaction onto the network, throw exception
                     throw new Error(err);
                 } else { // success pushing transaction onto network, return the transactionId
@@ -47,7 +57,7 @@ class BlockchainAnchor {
             var that = this;
 
             async.forEachSeries(SERVICES, function (blockchainServiceName, servicesCallback) {
-                pushEmbedTx(blockchainServiceName, that.address, that.keyPair, that.feeSatoshi, hexData, that.useTestnet, function (err, result) {
+                pushEmbedTx(blockchainServiceName, that.address, that.keyPair, that.feeSatoshi, hexData, that.useTestnet, that.blockcypherToken, function (err, result) {
                     if (err) { // error pushing transaction onto the network, throw exception
                         errors.push(err);
                         servicesCallback();
@@ -69,7 +79,7 @@ class BlockchainAnchor {
     splitOutputs(maxOutputs, callback) {
         if (this.blockchainServiceName != 'Any') // a specific service was chosen, attempt once with that service
         {
-            pushSplitOutputsTx(this.blockchainServiceName, this.address, this.keyPair, maxOutputs, this.feeSatoshi, this.useTestnet, function (err, result) {
+            pushSplitOutputsTx(this.blockchainServiceName, this.address, this.keyPair, maxOutputs, this.feeSatoshi, this.useTestnet, this.blockcypherToken, function (err, result) {
                 if (err) { // error pushing transaction onto the network, throw exception
                     throw new Error(err);
                 } else { // success pushing transaction onto network, return the transactionId
@@ -82,7 +92,7 @@ class BlockchainAnchor {
             var that = this;
 
             async.forEachSeries(SERVICES, function (blockchainServiceName, servicesCallback) {
-                pushSplitOutputsTx(that.blockchainServiceName, that.address, that.keyPair, maxOutputs, that.feeSatoshi, that.useTestnet, function (err, result) {
+                pushSplitOutputsTx(that.blockchainServiceName, that.address, that.keyPair, maxOutputs, that.feeSatoshi, that.useTestnet, that.blockcypherToken, function (err, result) {
                     if (err) { // error pushing transaction onto the network, throw exception
                         errors.push(err);
                         servicesCallback();
@@ -104,7 +114,7 @@ class BlockchainAnchor {
     confirm(transactionId, expectedValue, callback) {
         if (this.blockchainServiceName != 'Any') // a specific service was chosen, attempt once with that service
         {
-            confirmOpReturn(this.blockchainServiceName, transactionId, expectedValue, this.useTestnet, function (err, result) {
+            confirmOpReturn(this.blockchainServiceName, transactionId, expectedValue, this.useTestnet, this.blockcypherToken, function (err, result) {
                 if (err) { // error pushing transaction onto the network, throw exception
                     throw new Error(err);
                 } else { // success pushing transaction onto network, return the transactionId
@@ -117,7 +127,7 @@ class BlockchainAnchor {
             var that = this;
 
             async.forEachSeries(SERVICES, function (blockchainServiceName, servicesCallback) {
-                confirmOpReturn(blockchainServiceName, transactionId, expectedValue, that.useTestnet, function (err, result) {
+                confirmOpReturn(blockchainServiceName, transactionId, expectedValue, that.useTestnet, that.blockcypherToken, function (err, result) {
                     if (err) { // error pushing transaction onto the network, throw exception
                         errors.push(err);
                         servicesCallback();
@@ -143,13 +153,13 @@ class BlockchainAnchor {
 // PRIVATE functions
 ////////////////////////////////////////////
 
-function pushEmbedTx(blockchainServiceName, address, keyPair, feeSatoshi, hexData, useTestnet, callback) {
+function pushEmbedTx(blockchainServiceName, address, keyPair, feeSatoshi, hexData, useTestnet, blockcypherToken, callback) {
     // get an instance of the selected service
     var blockchainService = utils.getBlockchainService(blockchainServiceName);
 
     async.waterfall([
         function (wfCallback) {
-            blockchainService.getUnspentOutputs(address, useTestnet, function (err, unspentOutputs) {
+            blockchainService.getUnspentOutputs(address, useTestnet, blockcypherToken, function (err, unspentOutputs) {
                 if (err) {
                     wfCallback(err);
                 } else {
@@ -179,7 +189,7 @@ function pushEmbedTx(blockchainServiceName, address, keyPair, feeSatoshi, hexDat
 
                 var transactionHex = tx.build().toHex();
 
-                blockchainService.pushTransaction(transactionHex, useTestnet, function (err, transactionId) {
+                blockchainService.pushTransaction(transactionHex, useTestnet, blockcypherToken, function (err, transactionId) {
                     if (err) {
                         wfCallback(err);
                     } else {
@@ -193,13 +203,13 @@ function pushEmbedTx(blockchainServiceName, address, keyPair, feeSatoshi, hexDat
     });
 }
 
-function pushSplitOutputsTx(blockchainServiceName, address, keyPair, maxOutputs, feeSatoshi, useTestnet, callback) {
+function pushSplitOutputsTx(blockchainServiceName, address, keyPair, maxOutputs, feeSatoshi, useTestnet, blockcypherToken, callback) {
     // get an instacnce of the selected service
     var blockchainService = utils.getBlockchainService(blockchainServiceName);
 
     async.waterfall([
         function (wfCallback) {
-            blockchainService.getUnspentOutputs(address, useTestnet, function (err, unspentOutputs) {
+            blockchainService.getUnspentOutputs(address, useTestnet, blockcypherToken, function (err, unspentOutputs) {
                 if (err) {
                     wfCallback(err);
                 } else {
@@ -236,7 +246,7 @@ function pushSplitOutputsTx(blockchainServiceName, address, keyPair, maxOutputs,
 
             var transactionHex = tx.build().toHex();
 
-            blockchainService.pushTransaction(transactionHex, useTestnet, function (err, transactionId) {
+            blockchainService.pushTransaction(transactionHex, useTestnet, blockcypherToken, function (err, transactionId) {
                 if (err) {
                     wfCallback(err);
                 } else {
@@ -249,14 +259,14 @@ function pushSplitOutputsTx(blockchainServiceName, address, keyPair, maxOutputs,
     });
 }
 
-function confirmOpReturn(blockchainServiceName, transactionId, expectedValue, useTestnet, callback) {
+function confirmOpReturn(blockchainServiceName, transactionId, expectedValue, useTestnet, blockcypherToken, callback) {
     // get an instance of the selected service
     var blockchainService = utils.getBlockchainService(blockchainServiceName);
-    blockchainService.confirmOpReturn(transactionId, expectedValue, useTestnet, function (err, result) {
+    blockchainService.confirmOpReturn(transactionId, expectedValue, useTestnet, blockcypherToken, function (err, result) {
         callback(err, result);
     });
 }
 
-module.exports = function (privateKeyWIF, useTestnet, blockchainServiceName, feeSatoshi) {
-    return new BlockchainAnchor(privateKeyWIF, useTestnet, blockchainServiceName, feeSatoshi);
+module.exports = function (privateKeyWIF, useTestnet, blockchainServiceName, feeSatoshi, blockcypherToken) {
+    return new BlockchainAnchor(privateKeyWIF, useTestnet, blockchainServiceName, feeSatoshi, blockcypherToken);
 };

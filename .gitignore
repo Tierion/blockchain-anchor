@@ -32,9 +32,6 @@ node_modules
 # Optional REPL history
 .node_repl_history
 
-# config files
-config.js
-
 # generic place to put assorted nonsense
 sandbox
 

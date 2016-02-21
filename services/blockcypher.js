@@ -1,10 +1,9 @@
 var _ = require('lodash');
-var config = require('../config.js');
 var unirest = require('unirest');
 
 module.exports = {
-    getUnspentOutputs: function (address, useTestnet, callback) {
-        var targetUrl = 'https://api.blockcypher.com/v1/btc/' + (useTestnet ? 'test3' : 'main') + '/addrs/' + address + '?token=' + config.blockcypherToken + '&unspentOnly=1';
+    getUnspentOutputs: function (address, useTestnet, token, callback) {
+        var targetUrl = 'https://api.blockcypher.com/v1/btc/' + (useTestnet ? 'test3' : 'main') + '/addrs/' + address + '?token=' + token + '&unspentOnly=1';
 
         unirest.get(targetUrl).end(function (result) {
             if (result.error) {
@@ -36,8 +35,8 @@ module.exports = {
             }
         });
     },
-    pushTransaction: function (transactionHex, useTestnet, callback) {
-        unirest.post('https://api.blockcypher.com/v1/btc/' + (useTestnet ? 'test3' : 'main') + '/txs/push?token=' + config.blockcypherToken)
+    pushTransaction: function (transactionHex, useTestnet, token, callback) {
+        unirest.post('https://api.blockcypher.com/v1/btc/' + (useTestnet ? 'test3' : 'main') + '/txs/push?token=' + token)
             .header('Content-Type', 'application/json')
             .send({ 'tx': transactionHex })
             .end(function (result) {
@@ -53,8 +52,8 @@ module.exports = {
                 }
             });
     },
-    confirmOpReturn: function (transactionId, expectedValue, useTestnet, callback) {
-        var targetUrl = 'https://api.blockcypher.com/v1/btc/' + (useTestnet ? 'test3' : 'main') + '/txs/' + transactionId + '?token=' + config.blockcypherToken;
+    confirmOpReturn: function (transactionId, expectedValue, useTestnet, token, callback) {
+        var targetUrl = 'https://api.blockcypher.com/v1/btc/' + (useTestnet ? 'test3' : 'main') + '/txs/' + transactionId + '?token=' + token;
 
         unirest.get(targetUrl).end(function (result) {
             if (result.error) {
