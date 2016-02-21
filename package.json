@@ -1,7 +1,8 @@
 {
   "name": "blockchain-anchor",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A Node.js module for embedding data into the Bitcoin blockchain.",
+  "keywords": ["blockchain", "opreturn", "bitcoin", "btc"],
   "main": "blockchainanchor.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
