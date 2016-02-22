@@ -42,7 +42,7 @@ anchor.embed(hexData, function (err, result) {
   } else {
     console.log('New transaction Id = ' + result);
   }
-);
+});
 ```
 
 ### Confirm
@@ -59,7 +59,7 @@ anchor.confirm(txId, hexData, function (err, result) {
   } else {
     console.log('Transaction contains data? ' + result);
   }
-);
+});
 ```
 
 ### Split Outputs
@@ -76,5 +76,5 @@ anchor.splitOutputs(maxOutputs, function (err, result) {
   } else {
     console.log('New transaction Id = ' + result);
   }
-);
+});
 ```
