@@ -3,7 +3,7 @@
 [![npm](https://img.shields.io/npm/l/blockchain-anchor.svg)](https://www.npmjs.com/package/blockchain-anchor)
 [![npm](https://img.shields.io/npm/v/blockchain-anchor.svg)](https://www.npmjs.com/package/blockchain-anchor)
 
-A Node.js module for embedding data into the Bitcoin blockchain.
+A Node.js library for anchoring data into the Bitcoin blockchain.
 
 ## Installation
 
@@ -24,7 +24,7 @@ var anchorOptions = {
   feeSatoshi: 10000 // optional, defaults to 10000
 };
 
-var anchor = new blockchainAnchor(privateKeyWIF, anchorOptions);
+var anchor = new blockchainAnchor(privateKeyWIF, anchorOptions); // anchorOptions is optional
 ```
 
 This module uses a set of 3rd party APIs to read and write data from the Bitcoin blockchain. The acceptable values for 'blockchainServiceName' are blockcypher, blockr, insightbitpay, or any. If a specific service is chosen, then only that service will be used. If 'any' is chosen, then all services will be used, starting with one, and moving to the next in the event of failure. If you wish to use blockcypher, be sure to include a valid blockcypher token.
