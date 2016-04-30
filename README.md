@@ -8,7 +8,7 @@ A Node.js module for embedding data into the Bitcoin blockchain.
 ## Installation
 
 ```
-$ npm install blockchain-anchor
+$ npm install --save blockchain-anchor
 ```
 
 ### Create BlockchainAnchor Object
@@ -17,12 +17,14 @@ $ npm install blockchain-anchor
 var blockchainAnchor = require('blockchain-anchor');
 
 var privateKeyWIF = '91sdjjXQfj5ncC3YXg8d1Xjg8rK1oxXnp5BQ8iskE3aFbevRKVb';
-var useTestnet = true;
-var blockchainServiceName = 'blockcypher';
-var feeSatoshi = 10000;
-var blockcypherToken = '6e61883821ea7fb4308996486a4157b4';
+var anchorOptions = {
+  useTestnet: true, // optional, defaults to false
+  blockchainServiceName: 'blockcypher', // optional, defaults to 'Any'
+  blockcypherToken: '6e61883832ea7fb4308994386a4157b5', // required if using 'blockcypher' service
+  feeSatoshi: 10000 // optional, defaults to 10000
+};
 
-var anchor = blockchainAnchor(privateKeyWIF, useTestnet, blockchainServiceName, feeSatoshi, blockcypherToken);
+var anchor = new blockchainAnchor(privateKeyWIF, anchorOptions);
 ```
 
 This module uses a set of 3rd party APIs to read and write data from the Bitcoin blockchain. The acceptable values for 'blockchainServiceName' are blockcypher, blockr, insightbitpay, or any. If a specific service is chosen, then only that service will be used. If 'any' is chosen, then all services will be used, starting with one, and moving to the next in the event of failure. If you wish to use blockcypher, be sure to include a valid blockcypher token.

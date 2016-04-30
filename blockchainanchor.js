@@ -5,152 +5,172 @@ var bitcoin = require('bitcoinjs-lib');
 var _ = require('lodash');
 var utils = require('./helpers/utils.js');
 
-var SERVICES = ['blockcypher', 'blockr', 'insightbitpay'];
+var SERVICES = ['blockcypher', 'insightbitpay', 'blockr'];
 
-class BlockchainAnchor {
-    constructor(privateKeyWIF, useTestnet, blockchainServiceName, feeSatoshi, blockcypherToken) {    
+var BlockchainAnchor = function (privateKeyWIF, anchorOptions) {
+    // in case 'new' was omitted
+    if (!(this instanceof BlockchainAnchor)) {
+        return new BlockchainAnchor(privateKeyWIF, anchorOptions);
+    }
+
+    if (anchorOptions) { //if anchor optiosn were supplied, then process them
         // when useTestnet set to true, TestNet is used, otherwise defaults to Mainnet
-        this.network = useTestnet ? bitcoin.networks.testnet : bitcoin.networks.bitcoin;
-        this.useTestnet = useTestnet;
-    
-        // get keyPair for the supplied privateKeyWIF
-        this.keyPair = bitcoin.ECPair.fromWIF(privateKeyWIF, this.network);
-    
-        // derive target address from the keyPair
-        this.address = this.keyPair.getAddress();
-    
-        // check for valid blockchainServiceName, if not, set to Any    
-        blockchainServiceName = (blockchainServiceName || '').toLowerCase();
-        this.blockchainServiceName = SERVICES.indexOf(blockchainServiceName) > -1 ? blockchainServiceName : 'Any';
-    
-        // check for feeSatoshi, default to 10000 if not defined
-        this.feeSatoshi = feeSatoshi || 10000;
+        if (anchorOptions.useTestnet != undefined) {
+            this.useTestnet = anchorOptions.useTestnet;
+            this.network = anchorOptions.useTestnet ? bitcoin.networks.testnet : bitcoin.networks.bitcoin;
+        }
 
-        this.blockcypherToken = blockcypherToken;
-        if (!blockcypherToken) { // blockcypher token was not supplied, so remove from available services
+        // check for valid blockchainServiceName, if not, default to Any
+        if (anchorOptions.blockchainServiceName != undefined) {
+            anchorOptions.blockchainServiceName = anchorOptions.blockchainServiceName.toLowerCase();
+            if (SERVICES.indexOf(anchorOptions.blockchainServiceName) > -1) this.blockchainServiceName = anchorOptions.blockchainServiceName;
+        }
+
+        // check for feeSatoshi, default to 10000 if not defined
+        if (anchorOptions.feeSatoshi >= 0) this.feeSatoshi = anchorOptions.feeSatoshi
+
+        if (anchorOptions.blockcypherToken != undefined) {
+            this.blockcypherToken = anchorOptions.blockcypherToken;
+        } else {
+            // blockcypher token was not supplied, so remove from available services
             _.remove(SERVICES, function (x) {
                 return x == 'blockcypher';
             });
         }
+
+        if (!privateKeyWIF) throw 'Parameter privateKeyWIF is required.';
+        // get keyPair for the supplied privateKeyWIF
+        this.keyPair = bitcoin.ECPair.fromWIF(privateKeyWIF, this.network);
+        // derive target address from the keyPair
+        this.address = this.keyPair.getAddress();
     }
-    
-    ////////////////////////////////////////////
-    // PUBLIC functions
-    ////////////////////////////////////////////
+};
 
-    embed(hexData, callback) {
-        if (this.blockchainServiceName != 'Any') // a specific service was chosen, attempt once with that service
-        {
-            pushEmbedTx(this.blockchainServiceName, this.address, this.keyPair, this.feeSatoshi, hexData, this.useTestnet, this.blockcypherToken, function (err, result) {
-                if (err) { // error pushing transaction onto the network, return exception
-                    callback(err);
-                } else { // success pushing transaction onto network, return the transactionId
-                    callback(null, result);
-                }
-            });
-        } else { // use the first service option, continue with the next option upon failure until all have been attempted
-            var errors = [];
-            var txId = 0;
-            var that = this;
-
-            async.forEachSeries(SERVICES, function (blockchainServiceName, servicesCallback) {
-                pushEmbedTx(blockchainServiceName, that.address, that.keyPair, that.feeSatoshi, hexData, that.useTestnet, that.blockcypherToken, function (err, result) {
-                    if (err) { // error pushing transaction onto the network, return exception
-                        errors.push(err);
-                        servicesCallback();
-                    } else { // success pushing transaction onto network, return the transactionId
-                        txId = result;
-                        servicesCallback(true); // sending true, indicating success, as an error to break out of the foreach loop
-                    }
-                });
-            }, function (success) {
-                if (!success) { // none of the services returned successfully, return exception
-                    callback(errors.join('\n'));
-                } else { // a service has succeeded and returned a new transactionId, return that id to caller
-                    callback(null, txId);
-                }
-            });
-        }
-    }
-
-    splitOutputs(maxOutputs, callback) {
-        if (this.blockchainServiceName != 'Any') // a specific service was chosen, attempt once with that service
-        {
-            pushSplitOutputsTx(this.blockchainServiceName, this.address, this.keyPair, maxOutputs, this.feeSatoshi, this.useTestnet, this.blockcypherToken, function (err, result) {
-                if (err) { // error pushing transaction onto the network, return exception
-                    callback(err);
-                } else { // success pushing transaction onto network, return the transactionId
-                    callback(null, result);
-                }
-            });
-        } else { // use the first service option, continue with the next option upon failure until all have been attempted
-            var errors = [];
-            var txId = 0;
-            var that = this;
-
-            async.forEachSeries(SERVICES, function (blockchainServiceName, servicesCallback) {
-                pushSplitOutputsTx(that.blockchainServiceName, that.address, that.keyPair, maxOutputs, that.feeSatoshi, that.useTestnet, that.blockcypherToken, function (err, result) {
-                    if (err) { // error pushing transaction onto the network, return exception
-                        errors.push(err);
-                        servicesCallback();
-                    } else { // success pushing transaction onto network, return the transactionId
-                        txId = result;
-                        servicesCallback(true); // sending true, indicating success, as an error to break out of the foreach loop
-                    }
-                });
-            }, function (success) {
-                if (!success) { // none of the services returned successfully, return exception
-                    callback(errors.join('\n'));
-                } else { // a service has succeeded and returned a new transactionId, return that id to caller
-                    callback(null, txId);
-                }
-            });
-        }
-    }
-
-    confirm(transactionId, expectedValue, callback) {
-        if (this.blockchainServiceName != 'Any') // a specific service was chosen, attempt once with that service
-        {
-            confirmOpReturn(this.blockchainServiceName, transactionId, expectedValue, this.useTestnet, this.blockcypherToken, function (err, result) {
-                if (err) { // error pushing transaction onto the network, return exception
-                    callback(err);
-                } else { // success pushing transaction onto network, return the transactionId
-                    callback(null, result);
-                }
-            });
-        } else { // use the first service option, continue with the next option upon failure until all have been attempted
-            var errors = [];
-            var isConfirmed = null;
-            var that = this;
-
-            async.forEachSeries(SERVICES, function (blockchainServiceName, servicesCallback) {
-                confirmOpReturn(blockchainServiceName, transactionId, expectedValue, that.useTestnet, that.blockcypherToken, function (err, result) {
-                    if (err) { // error pushing transaction onto the network, return exception
-                        errors.push(err);
-                        servicesCallback();
-                    } else { // success pushing transaction onto network, return the transactionId
-                        isConfirmed = result;
-                        servicesCallback(true); // sending true, indicating success, as an error to break out of the foreach loop
-                    }
-                });
-            }, function (success) {
-                if (!success) { // none of the services returned successfully, return exception
-                    callback(errors.join('\n'));
-                } else { // a service has succeeded and returned a new transactionId, return that id to caller
-                    callback(null, isConfirmed);
-                }
-            });
-
-
-        }
-    }
-}
+BlockchainAnchor.prototype.network = bitcoin.networks.bitcoin;
+BlockchainAnchor.prototype.useTestnet = false;
+BlockchainAnchor.prototype.keyPair = null;
+BlockchainAnchor.prototype.address = null;
+BlockchainAnchor.prototype.blockchainServiceName = 'Any';
+BlockchainAnchor.prototype.feeSatoshi = 10000;
+BlockchainAnchor.prototype.blockcypherToken = null;
 
 ////////////////////////////////////////////
-// PRIVATE functions
+// PUBLIC functions
 ////////////////////////////////////////////
 
-function pushEmbedTx(blockchainServiceName, address, keyPair, feeSatoshi, hexData, useTestnet, blockcypherToken, callback) {
+BlockchainAnchor.prototype.embed = function (hexData, callback) {
+    if (this.blockchainServiceName != 'Any') // a specific service was chosen, attempt once with that service
+    {
+        this._pushEmbedTx(this.blockchainServiceName, this.address, this.keyPair, this.feeSatoshi, hexData, this.useTestnet, this.blockcypherToken, function (err, result) {
+            if (err) { // error pushing transaction onto the network, return exception
+                callback(err);
+            } else { // success pushing transaction onto network, return the transactionId
+                callback(null, result);
+            }
+        });
+    } else { // use the first service option, continue with the next option upon failure until all have been attempted
+        var errors = [];
+        var txId = 0;
+        var that = this;
+
+        async.forEachSeries(SERVICES, function (blockchainServiceName, servicesCallback) {
+            that._pushEmbedTx(blockchainServiceName, that.address, that.keyPair, that.feeSatoshi, hexData, that.useTestnet, that.blockcypherToken, function (err, result) {
+                if (err) { // error pushing transaction onto the network, return exception
+                    errors.push(err);
+                    servicesCallback();
+                } else { // success pushing transaction onto network, return the transactionId
+                    txId = result;
+                    servicesCallback(true); // sending true, indicating success, as an error to break out of the foreach loop
+                }
+            });
+        }, function (success) {
+            if (!success) { // none of the services returned successfully, return exception
+                callback(errors.join('\n'));
+            } else { // a service has succeeded and returned a new transactionId, return that id to caller
+                callback(null, txId);
+            }
+        });
+    }
+};
+
+BlockchainAnchor.prototype.splitOutputs = function (maxOutputs, callback) {
+    if (this.blockchainServiceName != 'Any') // a specific service was chosen, attempt once with that service
+    {
+        this._pushSplitOutputsTx(this.blockchainServiceName, this.address, this.keyPair, maxOutputs, this.feeSatoshi, this.useTestnet, this.blockcypherToken, function (err, result) {
+            if (err) { // error pushing transaction onto the network, return exception
+                callback(err);
+            } else { // success pushing transaction onto network, return the transactionId
+                callback(null, result);
+            }
+        });
+    } else { // use the first service option, continue with the next option upon failure until all have been attempted
+        var errors = [];
+        var txId = 0;
+        var that = this;
+
+        async.forEachSeries(SERVICES, function (blockchainServiceName, servicesCallback) {
+            that._pushSplitOutputsTx(that.blockchainServiceName, that.address, that.keyPair, maxOutputs, that.feeSatoshi, that.useTestnet, that.blockcypherToken, function (err, result) {
+                if (err) { // error pushing transaction onto the network, return exception
+                    errors.push(err);
+                    servicesCallback();
+                } else { // success pushing transaction onto network, return the transactionId
+                    txId = result;
+                    servicesCallback(true); // sending true, indicating success, as an error to break out of the foreach loop
+                }
+            });
+        }, function (success) {
+            if (!success) { // none of the services returned successfully, return exception
+                callback(errors.join('\n'));
+            } else { // a service has succeeded and returned a new transactionId, return that id to caller
+                callback(null, txId);
+            }
+        });
+    }
+};
+
+BlockchainAnchor.prototype.confirm = function (transactionId, expectedValue, callback) {
+    if (this.blockchainServiceName != 'Any') // a specific service was chosen, attempt once with that service
+    {
+        this._confirmOpReturn(this.blockchainServiceName, transactionId, expectedValue, this.useTestnet, this.blockcypherToken, function (err, result) {
+            if (err) { // error pushing transaction onto the network, return exception
+                callback(err);
+            } else { // success pushing transaction onto network, return the transactionId
+                callback(null, result);
+            }
+        });
+    } else { // use the first service option, continue with the next option upon failure until all have been attempted
+        var errors = [];
+        var isConfirmed = null;
+        var that = this;
+
+        async.forEachSeries(SERVICES, function (blockchainServiceName, servicesCallback) {
+            that._confirmOpReturn(blockchainServiceName, transactionId, expectedValue, that.useTestnet, that.blockcypherToken, function (err, result) {
+                if (err) { // error pushing transaction onto the network, return exception
+                    errors.push(err);
+                    servicesCallback();
+                } else { // success pushing transaction onto network, return the transactionId
+                    isConfirmed = result;
+                    servicesCallback(true); // sending true, indicating success, as an error to break out of the foreach loop
+                }
+            });
+        }, function (success) {
+            if (!success) { // none of the services returned successfully, return exception
+                callback(errors.join('\n'));
+            } else { // a service has succeeded and returned a new transactionId, return that id to caller
+                callback(null, isConfirmed);
+            }
+        });
+
+
+    }
+};
+
+
+//////////////////////////////////////////
+// Utility functions
+//////////////////////////////////////////
+
+BlockchainAnchor.prototype._pushEmbedTx = function (blockchainServiceName, address, keyPair, feeSatoshi, hexData, useTestnet, blockcypherToken, callback) {
     // get an instance of the selected service
     var blockchainService = utils.getBlockchainService(blockchainServiceName);
 
@@ -198,9 +218,9 @@ function pushEmbedTx(blockchainServiceName, address, keyPair, feeSatoshi, hexDat
     ], function (err, result) {
         callback(err, result);
     });
-}
+};
 
-function pushSplitOutputsTx(blockchainServiceName, address, keyPair, maxOutputs, feeSatoshi, useTestnet, blockcypherToken, callback) {
+BlockchainAnchor.prototype._pushSplitOutputsTx = function (blockchainServiceName, address, keyPair, maxOutputs, feeSatoshi, useTestnet, blockcypherToken, callback) {
     // get an instacnce of the selected service
     var blockchainService = utils.getBlockchainService(blockchainServiceName);
 
@@ -254,16 +274,14 @@ function pushSplitOutputsTx(blockchainServiceName, address, keyPair, maxOutputs,
     ], function (err, result) {
         callback(err, result);
     });
-}
+};
 
-function confirmOpReturn(blockchainServiceName, transactionId, expectedValue, useTestnet, blockcypherToken, callback) {
+BlockchainAnchor.prototype._confirmOpReturn = function (blockchainServiceName, transactionId, expectedValue, useTestnet, blockcypherToken, callback) {
     // get an instance of the selected service
     var blockchainService = utils.getBlockchainService(blockchainServiceName);
     blockchainService.confirmOpReturn(transactionId, expectedValue, useTestnet, blockcypherToken, function (err, result) {
         callback(err, result);
     });
-}
-
-module.exports = function (privateKeyWIF, useTestnet, blockchainServiceName, feeSatoshi, blockcypherToken) {
-    return new BlockchainAnchor(privateKeyWIF, useTestnet, blockchainServiceName, feeSatoshi, blockcypherToken);
 };
+
+module.exports = BlockchainAnchor;

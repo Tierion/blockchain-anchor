@@ -1,12 +1,15 @@
 {
   "name": "blockchain-anchor",
-  "version": "0.1.4",
+  "version": "1.0.0",
   "description": "A Node.js module for embedding data into the Bitcoin blockchain.",
-  "keywords": ["blockchain", "opreturn", "bitcoin", "btc"],
+  "keywords": [
+    "anchor",
+    "blockchain",
+    "opreturn",
+    "bitcoin",
+    "btc"
+  ],
   "main": "blockchainanchor.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Tierion/blockchain-anchor.git"
@@ -21,6 +24,6 @@
     "async": "^1.5.2",
     "bitcoinjs-lib": "^2.2.0",
     "lodash": "^4.5.0",
-    "unirest": "^0.4.2"
+    "request": "^2.72.0"
   }
 }
