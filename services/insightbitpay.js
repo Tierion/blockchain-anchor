@@ -1,3 +1,6 @@
+/*jslint node: true */
+'use strict';
+
 var _ = require('lodash');
 var request = require('request');
 
@@ -46,7 +49,7 @@ module.exports = {
         request.get({
             url: targetUrl
         }, function (err, res, body) {
-            if (err) return callback(result.error);
+            if (err) return callback(res.error);
             if (res.statusCode != 200) return callback(null, false); // received response, but transactionid was bad or not found, return false 
             var apiResult = JSON.parse(body);
             if (!apiResult.txid) {

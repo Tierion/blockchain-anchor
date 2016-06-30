@@ -1,4 +1,5 @@
-"use strict";
+/*jslint node: true */
+'use strict';
 
 var async = require('async');
 var bitcoin = require('bitcoinjs-lib');
@@ -15,21 +16,21 @@ var BlockchainAnchor = function (privateKeyWIF, anchorOptions) {
 
     if (anchorOptions) { //if anchor optiosn were supplied, then process them
         // when useTestnet set to true, TestNet is used, otherwise defaults to Mainnet
-        if (anchorOptions.useTestnet != undefined) {
+        if (anchorOptions.useTestnet !== undefined) {
             this.useTestnet = anchorOptions.useTestnet;
             this.network = anchorOptions.useTestnet ? bitcoin.networks.testnet : bitcoin.networks.bitcoin;
         }
 
         // check for valid blockchainServiceName, if not, default to Any
-        if (anchorOptions.blockchainServiceName != undefined) {
+        if (anchorOptions.blockchainServiceName !== undefined) {
             anchorOptions.blockchainServiceName = anchorOptions.blockchainServiceName.toLowerCase();
             if (SERVICES.indexOf(anchorOptions.blockchainServiceName) > -1) this.blockchainServiceName = anchorOptions.blockchainServiceName;
         }
 
         // check for feeSatoshi, default to 10000 if not defined
-        if (anchorOptions.feeSatoshi >= 0) this.feeSatoshi = anchorOptions.feeSatoshi
+        if (anchorOptions.feeSatoshi >= 0) this.feeSatoshi = anchorOptions.feeSatoshi;
 
-        if (anchorOptions.blockcypherToken != undefined) {
+        if (anchorOptions.blockcypherToken !== undefined) {
             this.blockcypherToken = anchorOptions.blockcypherToken;
         } else {
             // blockcypher token was not supplied, so remove from available services
@@ -236,7 +237,7 @@ BlockchainAnchor.prototype._pushSplitOutputsTx = function (blockchainServiceName
         },
         function (unspentOutputs, wfCallback) {
             var newOutputCount = maxOutputs;
-            var totalBalanceSatoshi = _.sumBy(unspentOutputs, function (x) { return x.amountSatoshi }); // value of all unspent outputs
+            var totalBalanceSatoshi = _.sumBy(unspentOutputs, function (x) { return x.amountSatoshi; }); // value of all unspent outputs
             var workingBalanceSatoshi = totalBalanceSatoshi - feeSatoshi; // deduct the fee, the remainder is to be divided amongst the outputs
             var perOutputAmountSatoshi = _.floor(workingBalanceSatoshi / newOutputCount); // amount for each output
             while (perOutputAmountSatoshi < 10000) {
@@ -257,7 +258,7 @@ BlockchainAnchor.prototype._pushSplitOutputsTx = function (blockchainServiceName
                 tx.addOutput(address, perOutputAmountSatoshi);
             }
 
-            for (var x = 0; x < tx.inputs.length; x++) {
+            for (x = 0; x < tx.inputs.length; x++) {
                 tx.sign(x, keyPair);
             }
 

@@ -1,3 +1,6 @@
+/*jslint node: true */
+'use strict';
+
 var blockcypherSvc = require('../services/blockcypher.js');
 var blockrSvc = require('../services/blockr.js');
 var insightbitpaySvc = require('../services/insightbitpay.js');
