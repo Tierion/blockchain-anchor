@@ -21,6 +21,7 @@ var BlockchainAnchor = function (privateKeyWIF, anchorOptions) {
     var blockchainServiceName = 'Any';
     var feeSatoshi = 10000;
     var blockcypherToken = null;
+    var keyProvided = false;
 
     if (anchorOptions) { //if anchor optiosn were supplied, then process them
         // when useTestnet set to true, TestNet is used, otherwise defaults to Mainnet
@@ -40,25 +41,30 @@ var BlockchainAnchor = function (privateKeyWIF, anchorOptions) {
 
         if (anchorOptions.blockcypherToken !== undefined) {
             blockcypherToken = anchorOptions.blockcypherToken;
-        } else {
-            // blockcypher token was not supplied, so remove from available services
-            _.remove(SERVICES, function (x) {
-                return x == 'blockcypher';
-            });
         }
     }
 
-    if (!privateKeyWIF) throw 'Parameter privateKeyWIF is required.';
-    // get keyPair for the supplied privateKeyWIF
-    keyPair = bitcoin.ECPair.fromWIF(privateKeyWIF, network);
-    // derive target address from the keyPair
-    address = keyPair.getAddress();
+    // blockcypher token was not supplied, so remove from available services
+    if (blockcypherToken === null) {
+        _.remove(SERVICES, function (x) {
+            return x == 'blockcypher';
+        });
+    }
+
+    if (privateKeyWIF !== undefined) {
+        // get keyPair for the supplied privateKeyWIF
+        keyPair = bitcoin.ECPair.fromWIF(privateKeyWIF, network);
+        // derive target address from the keyPair
+        address = keyPair.getAddress();
+        keyProvided = true;
+    }
 
     ////////////////////////////////////////////
     // PUBLIC functions
     ////////////////////////////////////////////
 
     this.embed = function (hexData, callback) {
+        if (!keyProvided) throw 'No privateKeyWIF was provided';
         if (blockchainServiceName != 'Any') // a specific service was chosen, attempt once with that service
         {
             _pushEmbedTx(blockchainServiceName, hexData, function (err, result) {
@@ -93,6 +99,7 @@ var BlockchainAnchor = function (privateKeyWIF, anchorOptions) {
     };
 
     this.splitOutputs = function (maxOutputs, callback) {
+        if (!keyProvided) throw 'No privateKeyWIF was provided';
         if (blockchainServiceName != 'Any') // a specific service was chosen, attempt once with that service
         {
             _pushSplitOutputsTx(blockchainServiceName, maxOutputs, function (err, result) {

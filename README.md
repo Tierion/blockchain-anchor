@@ -24,7 +24,9 @@ var anchorOptions = {
   feeSatoshi: 10000 // optional, defaults to 10000
 };
 
-var anchor = new blockchainAnchor(privateKeyWIF, anchorOptions); // anchorOptions is optional
+var anchor = new blockchainAnchor(privateKeyWIF, anchorOptions); // privateKeyWIF and anchorOptions are optional
+//If you omit the privateKeyWIF parameter, you will be unable to perform Embed or SplitOutputs tasks, and an error will be thrown. 
+//Omitting privateKeyWIF is useful for when you only need to perform Confirm tasks, as they are a readonly function not requiring key pairs or signing.
 ```
 
 This module uses a set of 3rd party APIs to read and write data from the Bitcoin blockchain. The acceptable values for 'blockchainServiceName' are blockcypher, blockr, insightbitpay, or any. If a specific service is chosen, then only that service will be used. If 'any' is chosen, then all services will be used, starting with one, and moving to the next in the event of failure. If you wish to use blockcypher, be sure to include a valid blockcypher token.
