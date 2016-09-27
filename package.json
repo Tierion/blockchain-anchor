@@ -1,7 +1,7 @@
 {
   "name": "blockchain-anchor",
-  "version": "1.1.0",
-  "description": "A Node.js library for anchoring data into the Bitcoin blockchain.",
+  "version": "1.2.0",
+  "description": "A Node.js library for anchoring data onto the Bitcoin blockchain and confirming anchored data on Bitcoin and Ethereum.",
   "keywords": [
     "anchor",
     "blockchain",
@@ -23,6 +23,7 @@
   "dependencies": {
     "async": "^1.5.2",
     "bitcoinjs-lib": "^2.2.0",
+    "ethereumjs-tx": "^1.1.2",
     "lodash": "^4.5.0",
     "request": "^2.72.0"
   }

@@ -51,7 +51,7 @@ var BlockchainAnchor = function (privateKeyWIF, anchorOptions) {
         });
     }
 
-    if (privateKeyWIF !== undefined) {
+    if (privateKeyWIF) {
         // get keyPair for the supplied privateKeyWIF
         keyPair = bitcoin.ECPair.fromWIF(privateKeyWIF, network);
         // derive target address from the keyPair
@@ -169,6 +169,16 @@ var BlockchainAnchor = function (privateKeyWIF, anchorOptions) {
         }
     };
 
+    this.confirmEth = function (transactionId, expectedValue, callback) {
+        _confirmEthData(transactionId, expectedValue, function (err, result) {
+            if (err) { // error pushing transaction onto the network, return exception
+                callback(err);
+            } else { // success pushing transaction onto network, return the transactionId
+                callback(null, result);
+            }
+        });
+    };
+
     //////////////////////////////////////////
     //  Private Utility functions
     //////////////////////////////////////////
@@ -283,6 +293,14 @@ var BlockchainAnchor = function (privateKeyWIF, anchorOptions) {
         // get an instance of the selected service
         var blockchainService = utils.getBlockchainService(serviceName);
         blockchainService.confirmOpReturn(transactionId, expectedValue, useTestnet, blockcypherToken, function (err, result) {
+            callback(err, result);
+        });
+    }
+
+    function _confirmEthData(transactionId, expectedValue, callback) {
+        // get an instance of the selected service
+        var blockchainService = utils.getBlockchainService('blockcypher');
+        blockchainService.confirmEthData(transactionId, expectedValue, blockcypherToken, function (err, result) {
             callback(err, result);
         });
     }

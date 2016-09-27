@@ -3,7 +3,7 @@
 [![npm](https://img.shields.io/npm/l/blockchain-anchor.svg)](https://www.npmjs.com/package/blockchain-anchor)
 [![npm](https://img.shields.io/npm/v/blockchain-anchor.svg)](https://www.npmjs.com/package/blockchain-anchor)
 
-A Node.js library for anchoring data into the Bitcoin blockchain.
+A Node.js library for anchoring data onto the Bitcoin blockchain and confirming anchored data on Bitcoin and Ethereum.
 
 ## Installation
 
@@ -28,8 +28,11 @@ var anchor = new blockchainAnchor(privateKeyWIF, anchorOptions); // privateKeyWI
 //If you omit the privateKeyWIF parameter, you will be unable to perform Embed or SplitOutputs tasks, and an error will be thrown. 
 //Omitting privateKeyWIF is useful for when you only need to perform Confirm tasks, as they are a readonly function not requiring key pairs or signing.
 ```
+Bitcoin anchor data is included in a transaction's OP_RETURN output. Ethereum anchor data is included in the transaction's data payload. 
 
-This module uses a set of 3rd party APIs to read and write data from the Bitcoin blockchain. The acceptable values for 'blockchainServiceName' are blockcypher, blockr, insightbitpay, or any. If a specific service is chosen, then only that service will be used. If 'any' is chosen, then all services will be used, starting with one, and moving to the next in the event of failure. If you wish to use blockcypher, be sure to include a valid blockcypher token.
+This module uses a set of 3rd party APIs to read and write data from the Bitcoin and Ethereum blockchains. When working with Bitcoin, the acceptable values for 'blockchainServiceName' are blockcypher, blockr, insightbitpay, or any. If a specific service is chosen, then only that service will be used. If 'any' is chosen, then all services will be used, starting with one, and moving to the next in the event of failure. If you wish to use blockcypher, be sure to include a valid blockcypher token. These optional parameters are not needed when conforming Ethereum anchors.
+
+
 
 ## Usage
 
@@ -58,6 +61,23 @@ var txId = '048ac54c4313dc6980cace9fac533d71f8fe5cad881f1271329b98183231a08f';
 var hexData = '05ae04314577b2783b4be98211d1b72476c59e9c413cfb2afa2f0c68e0d93911';
 
 anchor.confirm(txId, hexData, function (err, result) {
+  if(err) {
+    // do something
+  } else {
+    console.log('Transaction contains data? ' + result);
+  }
+});
+```
+
+### ConfirmEth
+
+Confirm your hex string data has been embedded into an Ethereum transaction, returning true or false.
+
+```js
+var txId = 'd3e7ec84c3dbe86f7d9a8ea68ae4ded6c0b012be519f433a07f15bd612fb47a9';
+var hexData = '2b10349367c46a91c485abca4f7834454118d631f28996fb2908a0fe8cefa0cd';
+
+anchor.confirmEth(txId, hexData, function (err, result) {
   if(err) {
     // do something
   } else {
