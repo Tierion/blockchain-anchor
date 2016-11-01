@@ -179,6 +179,42 @@ var BlockchainAnchor = function (privateKeyWIF, anchorOptions) {
         });
     };
 
+    this.confirmBTCBlockHeader = function (blockHeight, expectedValue, callback) {
+        if (blockchainServiceName != 'Any') // a specific service was chosen, attempt once with that service
+        {
+            _confirmBTCBlockHeader(blockchainServiceName, blockHeight, expectedValue, function (err, result) {
+                if (err) { // error pushing transaction onto the network, return exception
+                    callback(err);
+                } else { // success pushing transaction onto network, return the transactionId
+                    callback(null, result);
+                }
+            });
+        } else { // use the first service option, continue with the next option upon failure until all have been attempted
+            var errors = [];
+            var isConfirmed = null;
+
+            async.forEachSeries(SERVICES, function (blockchainServiceName, servicesCallback) {
+                _confirmBTCBlockHeader(blockchainServiceName, blockHeight, expectedValue, function (err, result) {
+                    if (err) { // error pushing transaction onto the network, return exception
+                        errors.push(err);
+                        servicesCallback();
+                    } else { // success pushing transaction onto network, return the transactionId
+                        isConfirmed = result;
+                        servicesCallback(true); // sending true, indicating success, as an error to break out of the foreach loop
+                    }
+                });
+            }, function (success) {
+                if (!success) { // none of the services returned successfully, return exception
+                    callback(errors.join('\n'));
+                } else { // a service has succeeded and returned a new transactionId, return that id to caller
+                    callback(null, isConfirmed);
+                }
+            });
+
+
+        }
+    };
+
     //////////////////////////////////////////
     //  Private Utility functions
     //////////////////////////////////////////
@@ -218,6 +254,7 @@ var BlockchainAnchor = function (privateKeyWIF, anchorOptions) {
                     tx.sign(0, keyPair);
 
                     var transactionHex = tx.build().toHex();
+        console.log(transactionHex);
 
                     blockchainService.pushTransaction(transactionHex, useTestnet, blockcypherToken, function (err, transactionId) {
                         if (err) {
@@ -301,6 +338,14 @@ var BlockchainAnchor = function (privateKeyWIF, anchorOptions) {
         // get an instance of the selected service
         var blockchainService = utils.getBlockchainService('blockcypher');
         blockchainService.confirmEthData(transactionId, expectedValue, blockcypherToken, function (err, result) {
+            callback(err, result);
+        });
+    }
+
+    function _confirmBTCBlockHeader(serviceName, blockHeight, expectedValue, callback) {
+        // get an instance of the selected service
+        var blockchainService = utils.getBlockchainService(serviceName);
+        blockchainService.confirmBTCBlockHeader(blockHeight, expectedValue, useTestnet, blockcypherToken, function (err, result) {
             callback(err, result);
         });
     }

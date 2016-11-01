@@ -77,11 +77,11 @@ module.exports = {
                 callback(null, resultMessage);
             }
         });
-        
+
     },
     confirmEthData: function (transactionId, expectedValue, token, callback) {
         var targetUrl = 'https://api.blockcypher.com/v1/eth/main/txs/' + transactionId;
-        if(token) targetUrl += ('?token=' + token);
+        if (token) targetUrl += ('?token=' + token);
 
         request.get({
             url: targetUrl
@@ -104,6 +104,27 @@ module.exports = {
                 callback(null, resultMessage);
             }
         });
+
+    },
+    confirmBTCBlockHeader: function (blockHeight, expectedValue, useTestnet, token, callback) { 
+        var targetUrl = 'https://api.blockcypher.com/v1/btc/' + (useTestnet ? 'test3' : 'main') + '/blocks/' + blockHeight + '?token=' + token;
         
+        request.get({
+            url: targetUrl
+        }, function (err, res, body) { 
+            if (err) return callback(res.error);
+            if (res.statusCode != 200) return callback(null, false); // received response, but blockHeight was bad or not found, return false 
+            var apiResult = JSON.parse(body);
+            if (apiResult.error) { 
+                callback(apiResult.error);
+            } else {
+                var resultMessage = false; 
+                if (apiResult.mrkl_root == expectedValue) {
+                    resultMessage = true;
+                }
+                callback(null, resultMessage);
+            }
+        });
+
     }
 };

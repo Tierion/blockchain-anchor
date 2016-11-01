@@ -53,21 +53,53 @@ module.exports = {
             if (res.statusCode != 200) return callback(null, false); // received response, but transactionid was bad or not found, return false 
             var apiResult = JSON.parse(body);
             if (!apiResult.txid) {
-                    callback(apiResult.error);
-                } else {
-                    var resultMessage = false;
-                    if (apiResult.vout) {
-                        _(apiResult.vout).each(function (output) {
-                            if (output.scriptPubKey) {
-                                if (output.scriptPubKey.asm == 'OP_RETURN ' + expectedValue) {
-                                    resultMessage = true;
-                                    return false;
-                                }
+                callback(apiResult.error);
+            } else {
+                var resultMessage = false;
+                if (apiResult.vout) {
+                    _(apiResult.vout).each(function (output) {
+                        if (output.scriptPubKey) {
+                            if (output.scriptPubKey.asm == 'OP_RETURN ' + expectedValue) {
+                                resultMessage = true;
+                                return false;
                             }
-                        });
-                    }
-                    callback(null, resultMessage);
+                        }
+                    });
                 }
+                callback(null, resultMessage);
+            }
+        });
+    },
+    confirmBTCBlockHeader: function (blockHeight, expectedValue, useTestnet, token, callback) {
+        var targetUrl = 'https://' + (useTestnet ? 'test-' : '') + 'insight.bitpay.com/api/block-index/' + blockHeight;
+
+        request.get({
+            url: targetUrl
+        }, function (err, res, body) {
+            if (err) return callback(res.error);
+            if (res.statusCode != 200) return callback(null, false); // received response, but blockHeight was bad or not found, return false 
+            var apiResult = JSON.parse(body);
+            if (!apiResult.blockHash) {
+                callback(apiResult.error);
+            } else {
+                var targetUrl = 'https://' + (useTestnet ? 'test-' : '') + 'insight.bitpay.com/api/block/' + apiResult.blockHash;
+                request.get({
+                    url: targetUrl
+                }, function (err, res, body) {
+                    if (err) return callback(res.error);
+                    if (res.statusCode != 200) return callback(null, false); // received response, but blockHash was bad or not found, return false 
+                    var apiResult = JSON.parse(body);
+                    if (!apiResult.merkleroot) {
+                        callback(apiResult.error);
+                    } else {
+                        var resultMessage = false;
+                        if (apiResult.merkleroot == expectedValue) {
+                            resultMessage = true;
+                        }
+                        callback(null, resultMessage);
+                    }
+                });
+            }
         });
     }
 };

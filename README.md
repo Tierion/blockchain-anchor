@@ -86,6 +86,23 @@ anchor.confirmEth(txId, hexData, function (err, result) {
 });
 ```
 
+### ConfirmBTCBlockHeader
+
+Confirm your hex string data equals the merkle root of the given BTC block, returning true or false.
+
+```js
+var blockHeight = 435821;
+var hexData = '2b10349367c46a91c485abca4f7834454118d631f28996fb2908a0fe8cefa0cd';
+
+anchor.confirmBTCBlockHeader(blockHeight, hexData, function (err, result) {
+  if(err) {
+    // do something
+  } else {
+    console.log('Transaction contains data? ' + result);
+  }
+});
+```
+
 ### Split Outputs
 
 Divides or consolidates your unspent outputs to an amount you set, returning a transaction id. If the resulting balance per output is less that 10000 satoshi, the number of outputs will be decreased until the balance per output exceeds that value.

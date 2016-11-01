@@ -70,5 +70,25 @@ module.exports = {
                 callback(null, resultMessage);
             }
         });
+    },
+    confirmBTCBlockHeader: function (blockHeight, expectedValue, useTestnet, token, callback) {
+        var targetUrl = 'http://' + (useTestnet ? 'tbtc' : 'btc') + '.blockr.io/api/v1/block/info/' + blockHeight;
+
+        request.get({
+            url: targetUrl
+        }, function (err, res, body) {
+            if (err) return callback(res.error);
+            if (res.statusCode != 200) return callback(null, false); // received response, but transactionid was bad or not found, return false 
+            var apiResult = JSON.parse(body);
+            if (apiResult.status != 'success') {
+                callback(apiResult.error);
+            } else { 
+                var resultMessage = false;
+                if (apiResult.data.merkleroot == expectedValue) {
+                    resultMessage = true;
+                }
+                callback(null, resultMessage);
+            }
+        });
     }
 };
