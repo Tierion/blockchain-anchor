@@ -215,6 +215,78 @@ var BlockchainAnchor = function (privateKeyWIF, anchorOptions) {
         }
     };
 
+    this.getBTCTransactionConfirmationCount = function (transactionId, callback) {
+        if (blockchainServiceName != 'Any') // a specific service was chosen, attempt once with that service
+        {
+            _getBTCTransactionConfirmationCount(blockchainServiceName, transactionId, function (err, result) {
+                if (err) { // error retrieving count, return exception
+                    callback(err);
+                } else { // success retrieving count, return the count
+                    callback(null, result);
+                }
+            });
+        } else { // use the first service option, continue with the next option upon failure until all have been attempted
+            var errors = [];
+            var count = 0;
+
+            async.forEachSeries(SERVICES, function (blockchainServiceName, servicesCallback) {
+                _getBTCTransactionConfirmationCount(blockchainServiceName, transactionId, function (err, result) {
+                    if (err) { // error getting count, return exception
+                        errors.push(err);
+                        servicesCallback();
+                    } else { // success getting count, return the count
+                        count = result;
+                        servicesCallback(true); // sending true, indicating success, as an error to break out of the foreach loop
+                    }
+                });
+            }, function (success) {
+                if (!success) { // none of the services returned successfully, return exception
+                    callback(errors.join('\n'));
+                } else { // a service has succeeded and returned a count, return that count to caller
+                    callback(null, count);
+                }
+            });
+
+
+        }
+    };
+
+    this.getBTCBlockTxIds = function (blockHeight, callback) {
+        if (blockchainServiceName != 'Any') // a specific service was chosen, attempt once with that service
+        {
+            _getBTCBlockTxIds(blockchainServiceName, blockHeight, function (err, result) {
+                if (err) { // error retrieving ids, return exception
+                    callback(err);
+                } else { // success retrieving ids, return the ids
+                    callback(null, result);
+                }
+            });
+        } else { // use the first service option, continue with the next option upon failure until all have been attempted
+            var errors = [];
+            var ids = null;
+
+            async.forEachSeries(SERVICES, function (blockchainServiceName, servicesCallback) {
+                _getBTCBlockTxIds(blockchainServiceName, blockHeight, function (err, result) {
+                    if (err) { // error getting ids, return exception
+                        errors.push(err);
+                        servicesCallback();
+                    } else { // success getting ids, return the ids
+                        ids = result;
+                        servicesCallback(true); // sending true, indicating success, as an error to break out of the foreach loop
+                    }
+                });
+            }, function (success) {
+                if (!success) { // none of the services returned successfully, return exception
+                    callback(errors.join('\n'));
+                } else { // a service has succeeded and returned ids, return ids to caller
+                    callback(null, ids);
+                }
+            });
+
+
+        }
+    };
+
     //////////////////////////////////////////
     //  Private Utility functions
     //////////////////////////////////////////
@@ -254,7 +326,6 @@ var BlockchainAnchor = function (privateKeyWIF, anchorOptions) {
                     tx.sign(0, keyPair);
 
                     var transactionHex = tx.build().toHex();
-        console.log(transactionHex);
 
                     blockchainService.pushTransaction(transactionHex, useTestnet, blockcypherToken, function (err, transactionId) {
                         if (err) {
@@ -346,6 +417,22 @@ var BlockchainAnchor = function (privateKeyWIF, anchorOptions) {
         // get an instance of the selected service
         var blockchainService = utils.getBlockchainService(serviceName);
         blockchainService.confirmBTCBlockHeader(blockHeight, expectedValue, useTestnet, blockcypherToken, function (err, result) {
+            callback(err, result);
+        });
+    }
+
+    function _getBTCTransactionConfirmationCount(serviceName, transactionId, callback) {
+        // get an instance of the selected service
+        var blockchainService = utils.getBlockchainService(serviceName);
+        blockchainService.getBTCTransactionConfirmationCount(transactionId, useTestnet, blockcypherToken, function (err, result) {
+            callback(err, result);
+        });
+    }
+
+    function _getBTCBlockTxIds(serviceName, blockHeight, callback) {
+        // get an instance of the selected service
+        var blockchainService = utils.getBlockchainService(serviceName);
+        blockchainService.getBTCBlockTxIds(blockHeight, useTestnet, blockcypherToken, function (err, result) {
             callback(err, result);
         });
     }

@@ -3,6 +3,7 @@
 
 var _ = require('lodash');
 var request = require('request');
+var async = require('async');
 
 module.exports = {
     getUnspentOutputs: function (address, useTestnet, token, callback) {
@@ -101,5 +102,28 @@ module.exports = {
                 });
             }
         });
+    },
+
+    getBTCTransactionConfirmationCount: function (transactionId, useTestnet, token, callback) {
+        var targetUrl = 'https://' + (useTestnet ? 'test-' : '') + 'insight.bitpay.com/api/tx/' + transactionId;
+
+        request.get({
+            url: targetUrl
+        }, function (err, res, body) {
+            if (err) return callback(res.error);
+            if (res.statusCode != 200) return callback(null, false); // received response, but transactionid was bad or not found, return false 
+            var apiResult = JSON.parse(body);
+            if (!apiResult.txid) {
+                callback(apiResult.error);
+            } else {
+                callback(null, apiResult.confirmations);
+            }
+        });
+    },
+
+    getBTCBlockTxIds: function (blockHeight, useTestnet, token, callback) {
+
+        callback('not implemented');
+
     }
 };
