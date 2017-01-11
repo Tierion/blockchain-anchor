@@ -67,24 +67,26 @@ var BlockchainAnchor = function (privateKeyWIF, anchorOptions) {
         if (!keyProvided) throw 'No privateKeyWIF was provided';
         if (blockchainServiceName != 'Any') // a specific service was chosen, attempt once with that service
         {
-            _pushEmbedTx(blockchainServiceName, hexData, function (err, result) {
+            _embed(blockchainServiceName, hexData, function (err, txId, rawTx) {
                 if (err) { // error pushing transaction onto the network, return exception
                     callback(err);
-                } else { // success pushing transaction onto network, return the transactionId
-                    callback(null, result);
+                } else { // success pushing transaction onto network, return the transaction info
+                    callback(null, txId, rawTx);
                 }
             });
         } else { // use the first service option, continue with the next option upon failure until all have been attempted
             var errors = [];
-            var txId = 0;
+            var newTxId = null;
+            var newRawTx = null;
 
             async.forEachSeries(SERVICES, function (blockchainServiceName, servicesCallback) {
-                _pushEmbedTx(blockchainServiceName, hexData, function (err, result) {
+                _embed(blockchainServiceName, hexData, function (err, txId, rawTx) {
                     if (err) { // error pushing transaction onto the network, return exception
                         errors.push(err);
                         servicesCallback();
-                    } else { // success pushing transaction onto network, return the transactionId
-                        txId = result;
+                    } else { // success pushing transaction onto network, return the transaction info
+                        newTxId = txId;
+                        newRawTx = rawTx;
                         servicesCallback(true); // sending true, indicating success, as an error to break out of the foreach loop
                     }
                 });
@@ -92,7 +94,7 @@ var BlockchainAnchor = function (privateKeyWIF, anchorOptions) {
                 if (!success) { // none of the services returned successfully, return exception
                     callback(errors.join('\n'));
                 } else { // a service has succeeded and returned a new transactionId, return that id to caller
-                    callback(null, txId);
+                    callback(null, newTxId, newRawTx);
                 }
             });
         }
@@ -291,7 +293,7 @@ var BlockchainAnchor = function (privateKeyWIF, anchorOptions) {
     //  Private Utility functions
     //////////////////////////////////////////
 
-    function _pushEmbedTx(serviceName, hexData, callback) {
+    function _embed(serviceName, hexData, callback) {
         // get an instance of the selected service
         var blockchainService = utils.getBlockchainService(serviceName);
 
@@ -331,13 +333,13 @@ var BlockchainAnchor = function (privateKeyWIF, anchorOptions) {
                         if (err) {
                             wfCallback(err);
                         } else {
-                            wfCallback(null, transactionId);
+                            wfCallback(null, transactionId, transactionHex);
                         }
                     });
                 }
             }
-        ], function (err, result) {
-            callback(err, result);
+        ], function (err, transactionId, transactionHex) {
+            callback(err, transactionId, transactionHex);
         });
     }
 

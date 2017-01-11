@@ -43,11 +43,12 @@ Embed your hex string data into the blockchain, and receive a Bitcoin transactio
 ```js
 var hexData = '05ae04314577b2783b4be98211d1b72476c59e9c413cfb2afa2f0c68e0d93911';
 
-anchor.embed(hexData, function (err, result) {
+anchor.embed(hexData, function (err, transactionId, rawTransaction) {
   if(err) {
     // do something
   } else {
-    console.log('New transaction Id = ' + result);
+    console.log('New transaction Id = ' + transactionId);
+    console.log('Raw tx = ' + rawTransaction);
   }
 });
 ```
