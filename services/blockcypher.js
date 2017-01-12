@@ -165,7 +165,7 @@ module.exports = {
             } else {
                 var txCount = apiResult.n_tx;
                 var txIds = apiResult.txids;
-                if (txCount <= limit) callback(null, txIds); // we have all the txids, return them
+                if (txCount <= limit) return callback(null, txIds); // we have all the txids, return them
 
                 // create segment list for subsequest calls to get complete list of txids
                 var segments = [];

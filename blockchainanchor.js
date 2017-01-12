@@ -258,9 +258,9 @@ var BlockchainAnchor = function (privateKeyWIF, anchorOptions) {
         {
             _getBTCBlockTxIds(blockchainServiceName, blockHeight, function (err, result) {
                 if (err) { // error retrieving ids, return exception
-                    callback(err);
+                    return callback(err);
                 } else { // success retrieving ids, return the ids
-                    callback(null, result);
+                    return callback(null, result);
                 }
             });
         } else { // use the first service option, continue with the next option upon failure until all have been attempted
@@ -271,17 +271,17 @@ var BlockchainAnchor = function (privateKeyWIF, anchorOptions) {
                 _getBTCBlockTxIds(blockchainServiceName, blockHeight, function (err, result) {
                     if (err) { // error getting ids, return exception
                         errors.push(err);
-                        servicesCallback();
+                        return servicesCallback();
                     } else { // success getting ids, return the ids
                         ids = result;
-                        servicesCallback(true); // sending true, indicating success, as an error to break out of the foreach loop
+                        return servicesCallback(true); // sending true, indicating success, as an error to break out of the foreach loop
                     }
                 });
             }, function (success) {
                 if (!success) { // none of the services returned successfully, return exception
-                    callback(errors.join('\n'));
+                    return callback(errors.join('\n'));
                 } else { // a service has succeeded and returned ids, return ids to caller
-                    callback(null, ids);
+                    return callback(null, ids);
                 }
             });
 
