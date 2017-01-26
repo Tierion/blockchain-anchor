@@ -442,3 +442,6 @@ var BlockchainAnchor = function (privateKeyWIF, anchorOptions) {
 };
 
 module.exports = BlockchainAnchor;
+module.exports.getInstance = function(privateKeyWIF, anchorOptions) {
+    return new BlockchainAnchor(privateKeyWIF, anchorOptions);
+};
