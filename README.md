@@ -30,7 +30,7 @@ var anchor = new blockchainAnchor(privateKeyWIF, anchorOptions); // privateKeyWI
 ```
 Bitcoin anchor data is included in a transaction's OP_RETURN output. Ethereum anchor data is included in the transaction's data payload. 
 
-This module uses a set of 3rd party APIs to read and write data from the Bitcoin and Ethereum blockchains. When working with Bitcoin, the acceptable values for 'blockchainServiceName' are blockcypher, blockr, insightbitpay, or any. If a specific service is chosen, then only that service will be used. If 'any' is chosen, then all services will be used, starting with one, and moving to the next in the event of failure. If you wish to use blockcypher, be sure to include a valid blockcypher token. These optional parameters are not needed when conforming Ethereum anchors.
+This module uses a set of 3rd party APIs to read and write data from the Bitcoin and Ethereum blockchains. When working with Bitcoin, the acceptable values for 'blockchainServiceName' are blockcypher, blockr, insightbitpay, or any. If a specific service is chosen, then only that service will be used. If 'any' is chosen, then all services will be used, starting with one, and moving to the next in the event of failure. If you wish to use blockcypher, be sure to include a valid blockcypher token. These optional parameters are not needed when confirming Ethereum anchors.
 
 
 
