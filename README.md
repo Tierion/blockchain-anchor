@@ -60,10 +60,10 @@ Confirm your hex string data has been embedded into a Bitcoin transaction, retur
 let transactionId = '048ac54c4313dc6980cace9fac533d71f8fe5cad881f1271329b98183231a08f' // the transaction id to inspect for the anchored value
 let expectedValue = '05ae04314577b2783b4be98211d1b72476c59e9c413cfb2afa2f0c68e0d93911' // the hex data string value to verify is anchored within the transaction
 
-let result
+let confirmed
 try {
-  result = await anchor.btcConfirmOpReturnAsync(transactionId, expectedValue)
-  console.log(result)
+  confirmed = await anchor.btcConfirmOpReturnAsync(transactionId, expectedValue)
+  console.log(confirmed)
 } catch (error) {
   console.error(error.message)
 }
@@ -77,10 +77,10 @@ Confirm your hex string data equals the merkle root of the given BTC block, retu
 var blockHeight = 435821 // the height of the block to confirm merkle root value
 var expectedValue = '2b10349367c46a91c485abca4f7834454118d631f28996fb2908a0fe8cefa0cd' // the hex data string value of the expected merkle root value for the block
 
-let result
+let confirmed
 try {
-  result = await anchor.btcConfirmBlockHeaderAsync(blockHeight, expectedValue)
-  console.log(result)
+  confirmed = await anchor.btcConfirmBlockHeaderAsync(blockHeight, expectedValue)
+  console.log(confirmed)
 } catch (error) {
   console.error(error.message)
 }
@@ -146,10 +146,10 @@ var transactionId = 'b61b35f6f274663c4a1c062174925b97dc705cbfca9bd704e91c7d352f7
 var expectedValue = 'a6ec80e2000000000000000000000000e6a4f92579facb4026096f017243ee839ff72fd1' // the hex data string value to verify is anchored within the transaction
 // Optionally, txId and hexData may begin with '0x' for all Ethereum functions
 
-let result
+let confirmed
 try {
-  result = await anchor.ethConfirmDataAsync(transactionId, expectedValue)
-  console.log(result)
+  confirmed = await anchor.ethConfirmDataAsync(transactionId, expectedValue)
+  console.log(confirmed)
 } catch (error) {
   console.error(error.message)
 }
