@@ -22,18 +22,19 @@ let anchorOptions = {
   btcUseTestnet: true, // optional: use testnet for bitcoin transactions, default: false
   service: 'blockcypher', // optional: select a service to use, default: Any
   blockcypherToken: '521ddb6aa94143a58cab3ee0f65e6280', // optional: required only when using blockcypher service
-  insightApiBase: 'http://35.186.183.22:3001/insight-api' // optional: connect to a custom instance of Bitcore's insight api when using insightapi service, defaults to insight.bitpay.com public api
+  insightApiBase: 'http://my.server.com/insight-api' // optional: connect to a custom instance of Bitcore's insight api when using insightapi service, defaults to insight.bitpay.com public api
+  // When overriding with insightApiBase, you must set btcUseTestnet to match the state of the server at insightApiBase
 }
 
 let anchor = new BlockchainAnchor(anchorOptions)
 ```
 Bitcoin anchor data will be included in a transaction's OP_RETURN output. Ethereum anchor data will be included in the transaction's data payload. 
 
-This package uses a set of 3rd party APIs to read and write data from the Bitcoin and Ethereum blockchains. When working with Bitcoin, the acceptable values for 'blockchainServiceName' are blockcypher, blockr, insightapi, or any. If a specific service is chosen, then only that service will be used. If 'any' is chosen, then all services will be used, starting with one, and moving to the next in the event of failure. If you wish to use blockcypher, be sure to include a valid blockcypher token. Currently, only blockcypher service is capable of confirming Ethereum anchors.
+This package uses a set of 3rd party APIs to read and write data from the Bitcoin and Ethereum blockchains. When working with Bitcoin, the acceptable values for 'service' are `blockcypher`, `blockr`, `insightapi`, or `any`. If a specific service is chosen, then only that service will be used. If 'any' is chosen, then all services will be used, starting with one, and moving to the next in the event of failure. If you wish to use blockcypher, be sure to include a valid blockcypher token. Currently, only blockcypher service is capable of confirming Ethereum anchors.
 
 ## Usage
 
-### Embed Btc
+### Embed BTC
 
 Embed your hex string data into the blockchain, and receive a Bitcoin transaction id and the raw transaction hex as a response.
 
@@ -52,7 +53,7 @@ try {
 }
 ```
 
-### Confirm Btc
+### Confirm BTC
 
 Confirm your hex string data has been embedded into a Bitcoin transaction, returning true or false.
 
@@ -69,13 +70,13 @@ try {
 }
 ```
 
-### Confirm Btc Block Header
+### Confirm BTC Block Header
 
-Confirm your hex string data equals the merkle root of the given BTC block, returning true or false.
+Confirm your hex string data equals the Merkle root of the given BTC block, returning true or false.
 
 ```js
-var blockHeight = 435821 // the height of the block to confirm merkle root value
-var expectedValue = '2b10349367c46a91c485abca4f7834454118d631f28996fb2908a0fe8cefa0cd' // the hex data string value of the expected merkle root value for the block
+var blockHeight = 435821 // the height of the block to confirm Merkle root value
+var expectedValue = '2b10349367c46a91c485abca4f7834454118d631f28996fb2908a0fe8cefa0cd' // the hex data string value of the expected Merkle root value for the block
 
 let confirmed
 try {
@@ -86,7 +87,7 @@ try {
 }
 ```
 
-### Get Btc Transaction Confirmation Count
+### Get BTC Transaction Confirmation Count
 
 Find the number of confirmations for a given transaction, returning a number.
 
@@ -102,12 +103,12 @@ try {
 }
 ```
 
-### Get Btc Block Transaction Ids
+### Get BTC Block Transaction Ids
 
 Get all the transaction ids in a given block, returning an array of transaction id hex strings.
 
 ```js
-var blockHeight = 435821 // the height of the block to confirm merkle root value
+var blockHeight = 435821 // the height of the block to confirm Merkle root value
 
 let txArray
 try {
@@ -118,9 +119,9 @@ try {
 }
 ```
 
-### Split Btc Outputs
+### Split BTC Outputs
 
-Divides or consolidates your unspent outputs to the number of outputs you set, equally distributing btc, and returning the transaction id and final output count. If the resulting balance per output is less that 10000 satoshi, the number of outputs will be decreased until the balance per output exceeds that value.
+Divides or consolidates your unspent outputs to the number of outputs you set, equally distributing BTC, and returning the transaction id and final output count. If the resulting balance per output is less that 10000 satoshi, the number of outputs will be decreased until the balance per output exceeds that value.
 
 ```js
 let privateKeyWIF = '91aFbdjd1Xj3VbXQg8rKsj5BQ8iYX1oncC3p5evRKsxXkEfnjg8' // for deriving keyPair used in transaction creation
@@ -137,7 +138,7 @@ try {
 }
 ```
 
-### Confirm Eth
+### Confirm ETH
 
 Confirm your hex string data has been embedded into an Ethereum transaction, returning true or false.
 
