@@ -277,7 +277,10 @@ let BlockchainAnchor = function (anchorOptions) {
 
     let transactionHex = tx.build().toHex()
 
-    let txResults = await blockchainService.pushTransactionAsync(transactionHex, serviceOptions)
+    let txResults = {}
+    txResults.txId = await blockchainService.pushTransactionAsync(transactionHex, serviceOptions)
+    txResults.rawTx = transactionHex
+
     return txResults
   }
 
@@ -318,8 +321,11 @@ let BlockchainAnchor = function (anchorOptions) {
 
     let transactionHex = tx.build().toHex()
 
-    let txResults = await blockchainService.pushTransactionAsync(transactionHex, serviceOptions)
-    return txResults
+    let splitResult = {}
+    splitResult.txId = await blockchainService.pushTransactionAsync(transactionHex, serviceOptions)
+    splitResult.count = newOutputCount
+    
+    return splitResult
   }
 
   async function _confirmOpReturnAsync (serviceName, transactionId, expectedValue) {
