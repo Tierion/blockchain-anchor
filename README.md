@@ -145,7 +145,7 @@ Confirm your hex string data has been embedded into an Ethereum transaction, ret
 ```js
 var transactionId = 'b61b35f6f274663c4a1c062174925b97dc705cbfca9bd704e91c7d352f709e9c' // the transaction id to inspect for the anchored value
 var expectedValue = 'a6ec80e2000000000000000000000000e6a4f92579facb4026096f017243ee839ff72fd1' // the hex data string value to verify is anchored within the transaction
-// Optionally, txId and hexData may begin with '0x' for all Ethereum functions
+// Optionally, transactionId and expectedValue may begin with '0x' for all Ethereum functions
 
 let confirmed
 try {
