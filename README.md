@@ -94,10 +94,10 @@ Get basic statistics about a transaction, returning an object containing the tra
 ```js
 var transactionId = 'b61b35f6f274663c4a1c062174925b97dc705cbfca9bd704e91c7d352f709e9c' // the transaction id to to get the stats for
 
-let count
+let txStats
 try {
-  count = await anchor.btcGetTxStatsAsync(transactionId)
-  console.log(count)
+  txStats = await anchor.btcGetTxStatsAsync(transactionId)
+  console.log(txStats)
 } catch (error) {
   console.error(error.message)
 }
