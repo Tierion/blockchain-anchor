@@ -54,6 +54,8 @@ let BlockchainAnchor = function (anchorOptions) {
   // PUBLIC functions
   /// /////////////////////////////////////////
 
+  // BTC functions
+
   this.btcOpReturnAsync = async (privateKeyWIF, hexData, feeTotalSat) => {
     if (!privateKeyWIF) throw new Error('No privateKeyWIF was provided')
     let keyPair, address
@@ -88,8 +90,6 @@ let BlockchainAnchor = function (anchorOptions) {
     }
     return txResults
   }
-
-  // BTC functions
 
   this.btcSplitOutputsAsync = async (privateKeyWIF, maxOutputs, feeTotalSat) => {
     if (!privateKeyWIF) throw new Error('No privateKeyWIF was provided')
@@ -170,6 +170,29 @@ let BlockchainAnchor = function (anchorOptions) {
       if (!success) throw new Error(errors)
     }
     return confirmed
+  }
+
+  this.btcGetTxStatsAsync = async (transactionId) => {
+    let txStats
+    if (service !== 'any') {
+      // a specific service was chosen, attempt once with that service
+      txStats = await _getBTCTransactionStatsAsync(service, transactionId)
+    } else { // use the first service option, continue with the next option upon failure until all have been attempted
+      let errors = []
+      let success = false
+      for (let index in SERVICES) {
+        try {
+          txStats = await _getBTCTransactionStatsAsync(SERVICES[index], transactionId)
+          success = true
+          break
+        } catch (error) {
+          errors.push(error.message)
+        }
+      }
+      // if none of the services returned successfully, throw error
+      if (!success) throw new Error(errors)
+    }
+    return txStats
   }
 
   this.btcGetTxConfirmationCountAsync = async (transactionId) => {
@@ -364,6 +387,19 @@ let BlockchainAnchor = function (anchorOptions) {
     if (serviceName === 'blockcypher' && blockcypherToken) serviceOptions.blockcypherToken = blockcypherToken
 
     let result = await blockchainService.confirmBTCBlockHeaderAsync(blockHeight, expectedValue, serviceOptions)
+    return result
+  }
+
+  async function _getBTCTransactionStatsAsync (serviceName, transactionId) {
+    // get an instance of the selected service
+    let blockchainService = utils.getBlockchainService(serviceName)
+
+    let serviceOptions = {}
+    serviceOptions.btcUseTestnet = btcUseTestnet
+    if (serviceName === 'insightapi') serviceOptions.insightApiBase = insightApiBase
+    if (serviceName === 'blockcypher' && blockcypherToken) serviceOptions.blockcypherToken = blockcypherToken
+
+    let result = await blockchainService.getBTCTransactionStatsAsync(transactionId, serviceOptions)
     return result
   }
 

@@ -87,6 +87,22 @@ try {
 }
 ```
 
+### Get BTC Transaction Stats
+
+Get basic statistics about a transaction, returning an object containing the transaction id, block height, block hash, confirmation count, fee paid, and size.
+
+```js
+var transactionId = 'b61b35f6f274663c4a1c062174925b97dc705cbfca9bd704e91c7d352f709e9c' // the transaction id to to get the stats for
+
+let count
+try {
+  count = await anchor.btcGetTxStatsAsync(transactionId)
+  console.log(count)
+} catch (error) {
+  console.error(error.message)
+}
+```
+
 ### Get BTC Transaction Confirmation Count
 
 Find the number of confirmations for a given transaction, returning a number.
