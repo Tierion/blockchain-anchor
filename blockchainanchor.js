@@ -2,7 +2,7 @@ const bitcoin = require('bitcoinjs-lib')
 const _ = require('lodash')
 const utils = require('./lib/utils.js')
 
-let SERVICES = ['insightapi', 'blockcypher', 'blockr']
+let SERVICES = ['insightapi', 'blockcypher']
 
 let BlockchainAnchor = function (anchorOptions) {
   // in case 'new' was omitted
@@ -324,7 +324,7 @@ let BlockchainAnchor = function (anchorOptions) {
     let splitResult = {}
     splitResult.txId = await blockchainService.pushTransactionAsync(transactionHex, serviceOptions)
     splitResult.count = newOutputCount
-    
+
     return splitResult
   }
 

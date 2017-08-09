@@ -30,7 +30,7 @@ let anchor = new BlockchainAnchor(anchorOptions)
 ```
 Bitcoin anchor data will be included in a transaction's OP_RETURN output. Ethereum anchor data will be included in the transaction's data payload. 
 
-This package uses a set of 3rd party APIs to read and write data from the Bitcoin and Ethereum blockchains. When working with Bitcoin, the acceptable values for 'service' are `blockcypher`, `blockr`, `insightapi`, or `any`. If a specific service is chosen, then only that service will be used. If 'any' is chosen, then all services will be used, starting with one, and moving to the next in the event of failure. If you wish to use blockcypher, be sure to include a valid blockcypher token. Currently, only blockcypher service is capable of confirming Ethereum anchors.
+This package uses a set of 3rd party APIs to read and write data from the Bitcoin and Ethereum blockchains. When working with Bitcoin, the acceptable values for 'service' are `blockcypher`, `insightapi`, or `any`. If a specific service is chosen, then only that service will be used. If 'any' is chosen, then all services will be used, starting with one, and moving to the next in the event of failure. If you wish to use blockcypher, be sure to include a valid blockcypher token. Currently, only blockcypher service is capable of confirming Ethereum anchors.
 
 ## Usage
 
