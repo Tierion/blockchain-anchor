@@ -22,7 +22,8 @@ let anchorOptions = {
   btcUseTestnet: true, // optional: use testnet for bitcoin transactions, default: false
   service: 'blockcypher', // optional: select a service to use, default: Any
   blockcypherToken: '521ddb6aa94143a58cab3ee0f65e6280', // optional: required only when using blockcypher service
-  insightApiBase: 'http://my.server.com/insight-api' // optional: connect to a custom instance of Bitcore's insight api when using insightapi service, defaults to insight.bitpay.com public api
+  insightApiBase: 'http://my.server.com/insight-api', // optional: connect to a custom instance of Bitcore's insight api when using insightapi service, defaults to insight.bitpay.com public api
+  insightFallback: true // optional: when specifying a custom insightApiBase, retry with the insight.bitpay.com public api in the event of failure, defaults to false
   // When overriding with insightApiBase, you must set btcUseTestnet to match the state of the server at insightApiBase
 }
 
