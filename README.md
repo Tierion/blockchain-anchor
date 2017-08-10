@@ -75,12 +75,12 @@ try {
 Confirm your hex string data equals the Merkle root of the given BTC block, returning true or false.
 
 ```js
-var blockHeight = 435821 // the height of the block to confirm Merkle root value
+var blockHeightOrHash = 435821 // the height of the block to confirm Merkle root value, a block hash may also be provided instead
 var expectedValue = '2b10349367c46a91c485abca4f7834454118d631f28996fb2908a0fe8cefa0cd' // the hex data string value of the expected Merkle root value for the block
 
 let confirmed
 try {
-  confirmed = await anchor.btcConfirmBlockHeaderAsync(blockHeight, expectedValue)
+  confirmed = await anchor.btcConfirmBlockHeaderAsync(blockHeightOrHash, expectedValue)
   console.log(confirmed)
 } catch (error) {
   console.error(error.message)
@@ -119,16 +119,32 @@ try {
 }
 ```
 
+### Get BTC Block Stats
+
+Get basic statistics about a block, returning an object containing the block hight, block hash, merkle root, time, and transaction ids.
+
+```js
+var blockHeightOrHash = 435821 // the height of the block to retrieve stats for, a block hash may also be provided instead
+
+let blockStats
+try {
+  blockStats = await anchor.getBTCBlockStatsAsync(blockHeightOrHash)
+  console.log(blockStats)
+} catch (error) {
+  console.error(error.message)
+}
+```
+
 ### Get BTC Block Transaction Ids
 
 Get all the transaction ids in a given block, returning an array of transaction id hex strings.
 
 ```js
-var blockHeight = 435821 // the height of the block to confirm Merkle root value
+var blockHeightOrHash = 435821 // the height of the block to confirm Merkle root value, a block hash may also be provided instead
 
 let txArray
 try {
-  txArray = await anchor.btcGetBlockTxIdsAsync(blockHeight)
+  txArray = await anchor.btcGetBlockTxIdsAsync(blockHeightOrHash)
   console.log(txArray)
 } catch (error) {
   console.error(error.message)

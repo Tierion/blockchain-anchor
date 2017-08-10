@@ -149,17 +149,17 @@ let BlockchainAnchor = function (anchorOptions) {
     return confirmed
   }
 
-  this.btcConfirmBlockHeaderAsync = async (blockHeight, expectedValue) => {
+  this.btcConfirmBlockHeaderAsync = async (blockHeightOrHash, expectedValue) => {
     let confirmed = false
     if (service !== 'any') {
       // a specific service was chosen, attempt once with that service
-      confirmed = await _confirmBTCBlockHeaderAsync(service, blockHeight, expectedValue)
+      confirmed = await _confirmBTCBlockHeaderAsync(service, blockHeightOrHash, expectedValue)
     } else { // use the first service option, continue with the next option upon failure until all have been attempted
       let errors = []
       let success = false
       for (let index in SERVICES) {
         try {
-          confirmed = await _confirmBTCBlockHeaderAsync(SERVICES[index], blockHeight, expectedValue)
+          confirmed = await _confirmBTCBlockHeaderAsync(SERVICES[index], blockHeightOrHash, expectedValue)
           success = true
           break
         } catch (error) {
@@ -218,17 +218,40 @@ let BlockchainAnchor = function (anchorOptions) {
     return count
   }
 
-  this.btcGetBlockTxIdsAsync = async (blockHeight) => {
-    let ids = null
+  this.btcGetBlockStatsAsync = async (blockHeightOrHash) => {
+    let blockStats
     if (service !== 'any') {
       // a specific service was chosen, attempt once with that service
-      ids = await _getBTCBlockTxIdsAsync(service, blockHeight)
+      blockStats = await _getBTCBlockStatsAsync(service, blockHeightOrHash)
     } else { // use the first service option, continue with the next option upon failure until all have been attempted
       let errors = []
       let success = false
       for (let index in SERVICES) {
         try {
-          ids = await _getBTCBlockTxIdsAsync(SERVICES[index], blockHeight)
+          blockStats = await _getBTCBlockStatsAsync(SERVICES[index], blockHeightOrHash)
+          success = true
+          break
+        } catch (error) {
+          errors.push(error.message)
+        }
+      }
+      // if none of the services returned successfully, throw error
+      if (!success) throw new Error(errors)
+    }
+    return blockStats
+  }
+
+  this.btcGetBlockTxIdsAsync = async (blockHeightOrHash) => {
+    let ids = null
+    if (service !== 'any') {
+      // a specific service was chosen, attempt once with that service
+      ids = await _getBTCBlockTxIdsAsync(service, blockHeightOrHash)
+    } else { // use the first service option, continue with the next option upon failure until all have been attempted
+      let errors = []
+      let success = false
+      for (let index in SERVICES) {
+        try {
+          ids = await _getBTCBlockTxIdsAsync(SERVICES[index], blockHeightOrHash)
           success = true
           break
         } catch (error) {
@@ -377,7 +400,7 @@ let BlockchainAnchor = function (anchorOptions) {
     return result
   }
 
-  async function _confirmBTCBlockHeaderAsync (serviceName, blockHeight, expectedValue) {
+  async function _confirmBTCBlockHeaderAsync (serviceName, blockHeightOrHash, expectedValue) {
     // get an instance of the selected service
     let blockchainService = utils.getBlockchainService(serviceName)
 
@@ -386,7 +409,7 @@ let BlockchainAnchor = function (anchorOptions) {
     if (serviceName === 'insightapi') serviceOptions.insightApiBase = insightApiBase
     if (serviceName === 'blockcypher' && blockcypherToken) serviceOptions.blockcypherToken = blockcypherToken
 
-    let result = await blockchainService.confirmBTCBlockHeaderAsync(blockHeight, expectedValue, serviceOptions)
+    let result = await blockchainService.confirmBTCBlockHeaderAsync(blockHeightOrHash, expectedValue, serviceOptions)
     return result
   }
 
@@ -403,6 +426,19 @@ let BlockchainAnchor = function (anchorOptions) {
     return result
   }
 
+  async function _getBTCBlockStatsAsync (serviceName, blockHeightOrHash) {
+    // get an instance of the selected service
+    let blockchainService = utils.getBlockchainService(serviceName)
+
+    let serviceOptions = {}
+    serviceOptions.btcUseTestnet = btcUseTestnet
+    if (serviceName === 'insightapi') serviceOptions.insightApiBase = insightApiBase
+    if (serviceName === 'blockcypher' && blockcypherToken) serviceOptions.blockcypherToken = blockcypherToken
+
+    let result = await blockchainService.getBTCBlockStatsAsync(blockHeightOrHash, serviceOptions)
+    return result
+  }
+
   async function _getBTCTransactionConfirmationCountAsync (serviceName, transactionId) {
     // get an instance of the selected service
     let blockchainService = utils.getBlockchainService(serviceName)
@@ -416,7 +452,7 @@ let BlockchainAnchor = function (anchorOptions) {
     return result
   }
 
-  async function _getBTCBlockTxIdsAsync (serviceName, blockHeight) {
+  async function _getBTCBlockTxIdsAsync (serviceName, blockHeightOrHash) {
     // get an instance of the selected service
     let blockchainService = utils.getBlockchainService(serviceName)
 
@@ -425,7 +461,7 @@ let BlockchainAnchor = function (anchorOptions) {
     if (serviceName === 'insightapi') serviceOptions.insightApiBase = insightApiBase
     if (serviceName === 'blockcypher' && blockcypherToken) serviceOptions.blockcypherToken = blockcypherToken
 
-    let result = await blockchainService.getBTCBlockTxIdsAsync(blockHeight, serviceOptions)
+    let result = await blockchainService.getBTCBlockTxIdsAsync(blockHeightOrHash, serviceOptions)
     return result
   }
 }
