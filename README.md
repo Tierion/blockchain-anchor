@@ -97,7 +97,12 @@ var transactionId = 'b61b35f6f274663c4a1c062174925b97dc705cbfca9bd704e91c7d352f7
 let txStats
 try {
   txStats = await anchor.btcGetTxStatsAsync(transactionId)
-  console.log(txStats)
+  console.log(`Transaction id = ${txStats.id}`)
+  console.log(`Block height = ${txStats.blockHeight}`)
+  console.log(`Block hash = ${txStats.blockHash}`)
+  console.log(`Block confirmations = ${txStats.confirmations}`)
+  console.log(`Transaction fee = ${txStats.feeSatoshi}`)
+  console.log(`Transaction size = ${txStats.sizeBytes}`)
 } catch (error) {
   console.error(error.message)
 }
@@ -129,7 +134,11 @@ var blockHeightOrHash = 435821 // the height of the block to retrieve stats for,
 let blockStats
 try {
   blockStats = await anchor.getBTCBlockStatsAsync(blockHeightOrHash)
-  console.log(blockStats)
+  console.log(`Block height = ${blockStats.height}`)
+  console.log(`Block hash = ${blockStats.hash}`)
+  console.log(`Block Merkle root = ${blockStats.merkleRoot}`)
+  console.log(`Block time = ${blockStats.time}`)
+  console.log(`Transaction ids = ${blockStats.txIds}`)
 } catch (error) {
   console.error(error.message)
 }
