@@ -230,6 +230,24 @@ let BlockchainAnchor = function (anchorOptions) {
     return ids
   }
 
+  this.btcGetEstimatedFeeRateSatPerByteAsync = async () => {
+    let feeRateSatPerByte = null
+    let errors = []
+    let success = false
+    for (let index in SERVICES_TO_USE) {
+      try {
+        feeRateSatPerByte = await _getEstimatedFeeRateSatPerByteAsync(SERVICES_TO_USE[index])
+        success = true
+        break
+      } catch (error) {
+        errors.push(error.message)
+      }
+    }
+    // if none of the services returned successfully, throw error
+    if (!success) throw new Error(errors)
+    return feeRateSatPerByte
+  }
+
   // ETH functions
 
   this.ethConfirmDataAsync = async (transactionId, expectedValue) => {
@@ -351,20 +369,6 @@ let BlockchainAnchor = function (anchorOptions) {
     return result
   }
 
-  async function _confirmEthDataAsync (serviceName, transactionId, expectedValue) {
-    // get an instance of the selected service
-    let blockchainService = utils.getBlockchainService(serviceName)
-
-    let serviceOptions = {}
-    serviceOptions.btcUseTestnet = btcUseTestnet
-    if (serviceName === 'custom-insightapi') serviceOptions.insightApiBase = customInsightApiBase
-    if (serviceName === 'insightapi') serviceOptions.insightApiBase = defaultInsightApiBase
-    if (serviceName === 'blockcypher') serviceOptions.blockcypherToken = blockcypherToken
-
-    let result = await blockchainService.confirmEthDataAsync(transactionId, expectedValue, serviceOptions)
-    return result
-  }
-
   async function _confirmBTCBlockHeaderAsync (serviceName, blockHeightOrHash, expectedValue) {
     // get an instance of the selected service
     let blockchainService = utils.getBlockchainService(serviceName)
@@ -432,6 +436,34 @@ let BlockchainAnchor = function (anchorOptions) {
     if (serviceName === 'blockcypher') serviceOptions.blockcypherToken = blockcypherToken
 
     let result = await blockchainService.getBTCBlockTxIdsAsync(blockHeightOrHash, serviceOptions)
+    return result
+  }
+
+  async function _getEstimatedFeeRateSatPerByteAsync (serviceName) {
+    // get an instance of the selected service
+    let blockchainService = utils.getBlockchainService(serviceName)
+
+    let serviceOptions = {}
+    serviceOptions.btcUseTestnet = btcUseTestnet
+    if (serviceName === 'custom-insightapi') serviceOptions.insightApiBase = customInsightApiBase
+    if (serviceName === 'insightapi') serviceOptions.insightApiBase = defaultInsightApiBase
+    if (serviceName === 'blockcypher') serviceOptions.blockcypherToken = blockcypherToken
+
+    let result = await blockchainService.getEstimatedFeeRateSatPerByteAsync(serviceOptions)
+    return result
+  }
+
+  async function _confirmEthDataAsync (serviceName, transactionId, expectedValue) {
+    // get an instance of the selected service
+    let blockchainService = utils.getBlockchainService(serviceName)
+
+    let serviceOptions = {}
+    serviceOptions.btcUseTestnet = btcUseTestnet
+    if (serviceName === 'custom-insightapi') serviceOptions.insightApiBase = customInsightApiBase
+    if (serviceName === 'insightapi') serviceOptions.insightApiBase = defaultInsightApiBase
+    if (serviceName === 'blockcypher') serviceOptions.blockcypherToken = blockcypherToken
+
+    let result = await blockchainService.confirmEthDataAsync(transactionId, expectedValue, serviceOptions)
     return result
   }
 }

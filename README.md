@@ -161,6 +161,20 @@ try {
 }
 ```
 
+### Get BTC Estimated Fee Rate
+
+Get the estimated fee for a transaction to be confirmed within the next 2 blocks, returning an integer representing satoshi per byte.
+
+```js
+let feeRateSatPerByte
+try {
+  feeRateSatPerByte = await anchor.btcGetEstimatedFeeRateSatPerByteAsync()
+  console.log(feeRateSatPerByte)
+} catch (error) {
+  console.error(error.message)
+}
+```
+
 ### Split BTC Outputs
 
 Divides or consolidates your unspent outputs to the number of outputs you set, equally distributing BTC, and returning the transaction id and final output count. If the resulting balance per output is less that 10000 satoshi, the number of outputs will be decreased until the balance per output exceeds that value.
