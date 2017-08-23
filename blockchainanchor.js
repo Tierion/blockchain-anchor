@@ -79,7 +79,7 @@ let BlockchainAnchor = function (anchorOptions) {
     let txResults
     let errors = []
     let success = false
-    for (let index in SERVICES_TO_USE) {
+    for (let index = 0; index < SERVICES_TO_USE.length; index++) {
       try {
         txResults = await _embedAsync(SERVICES_TO_USE[index], hexData, address, keyPair, feeTotalSat)
         success = true
@@ -108,7 +108,7 @@ let BlockchainAnchor = function (anchorOptions) {
     let txResults
     let errors = []
     let success = false
-    for (let index in SERVICES_TO_USE) {
+    for (let index = 0; index < SERVICES_TO_USE.length; index++) {
       try {
         txResults = await _pushSplitOutputsTxAsync(SERVICES_TO_USE[index], maxOutputs, address, keyPair, feeTotalSat)
         success = true
@@ -126,7 +126,7 @@ let BlockchainAnchor = function (anchorOptions) {
     let confirmed = false
     let errors = []
     let success = false
-    for (let index in SERVICES_TO_USE) {
+    for (let index = 0; index < SERVICES_TO_USE.length; index++) {
       try {
         confirmed = await _confirmOpReturnAsync(SERVICES_TO_USE[index], transactionId, expectedValue)
         success = true
@@ -144,7 +144,7 @@ let BlockchainAnchor = function (anchorOptions) {
     let confirmed = false
     let errors = []
     let success = false
-    for (let index in SERVICES_TO_USE) {
+    for (let index = 0; index < SERVICES_TO_USE.length; index++) {
       try {
         confirmed = await _confirmBTCBlockHeaderAsync(SERVICES_TO_USE[index], blockHeightOrHash, expectedValue)
         success = true
@@ -162,7 +162,7 @@ let BlockchainAnchor = function (anchorOptions) {
     let txStats
     let errors = []
     let success = false
-    for (let index in SERVICES_TO_USE) {
+    for (let index = 0; index < SERVICES_TO_USE.length; index++) {
       try {
         txStats = await _getBTCTransactionStatsAsync(SERVICES_TO_USE[index], transactionId)
         success = true
@@ -180,7 +180,7 @@ let BlockchainAnchor = function (anchorOptions) {
     let count = 0
     let errors = []
     let success = false
-    for (let index in SERVICES_TO_USE) {
+    for (let index = 0; index < SERVICES_TO_USE.length; index++) {
       try {
         count = await _getBTCTransactionConfirmationCountAsync(SERVICES_TO_USE[index], transactionId)
         success = true
@@ -198,7 +198,7 @@ let BlockchainAnchor = function (anchorOptions) {
     let blockStats
     let errors = []
     let success = false
-    for (let index in SERVICES_TO_USE) {
+    for (let index = 0; index < SERVICES_TO_USE.length; index++) {
       try {
         blockStats = await _getBTCBlockStatsAsync(SERVICES_TO_USE[index], blockHeightOrHash)
         success = true
@@ -216,7 +216,7 @@ let BlockchainAnchor = function (anchorOptions) {
     let ids = null
     let errors = []
     let success = false
-    for (let index in SERVICES_TO_USE) {
+    for (let index = 0; index < SERVICES_TO_USE.length; index++) {
       try {
         ids = await _getBTCBlockTxIdsAsync(SERVICES_TO_USE[index], blockHeightOrHash)
         success = true
@@ -234,7 +234,7 @@ let BlockchainAnchor = function (anchorOptions) {
     let feeRateSatPerByte = null
     let errors = []
     let success = false
-    for (let index in SERVICES_TO_USE) {
+    for (let index = 0; index < SERVICES_TO_USE.length; index++) {
       try {
         feeRateSatPerByte = await _getEstimatedFeeRateSatPerByteAsync(SERVICES_TO_USE[index])
         success = true
@@ -254,7 +254,7 @@ let BlockchainAnchor = function (anchorOptions) {
     let confirmed = false
     let errors = []
     let success = false
-    for (let index in SERVICES_TO_USE) {
+    for (let index = 0; index < SERVICES_TO_USE.length; index++) {
       try {
         confirmed = await _confirmEthDataAsync(SERVICES_TO_USE[index], transactionId, expectedValue)
         success = true
