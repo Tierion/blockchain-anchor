@@ -16,7 +16,7 @@
     "url": "git+https://github.com/Tierion/blockchain-anchor.git"
   },
   "author": "Jason Bukowski <jason@tierion.com> (https://tierion.com)",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/Tierion/blockchain-anchor/issues"
   },
