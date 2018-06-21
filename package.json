@@ -1,6 +1,6 @@
 {
   "name": "blockchain-anchor",
-  "version": "2.3.2",
+  "version": "2.3.3",
   "description": "A javascript library for anchoring data onto the Bitcoin blockchain and confirming anchored data on Bitcoin and Ethereum.",
   "keywords": [
     "anchor",
@@ -11,10 +11,7 @@
     "ethereum"
   ],
   "main": "blockchainanchor.js",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Tierion/blockchain-anchor.git"
-  },
+  "repository": "git+https://github.com/Tierion/blockchain-anchor.git",
   "author": "Jason Bukowski <jason@tierion.com> (https://tierion.com)",
   "license": "Apache-2.0",
   "bugs": {
@@ -22,11 +19,11 @@
   },
   "homepage": "https://github.com/Tierion/blockchain-anchor#readme",
   "dependencies": {
-    "bitcoinjs-lib": "^3.1.1",
-    "ethereumjs-tx": "^1.3.3",
-    "lodash": "^4.17.4",
-    "merkle-tools": "^1.3.2",
-    "request": "^2.81.0",
-    "request-promise-native": "^1.0.4"
+    "bitcoinjs-lib": "^3.3.2",
+    "ethereumjs-tx": "^1.3.4",
+    "lodash": "^4.17.10",
+    "merkle-tools": "^1.4.0",
+    "request": "^2.87.0",
+    "request-promise-native": "^1.0.5"
   }
 }
