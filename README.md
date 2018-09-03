@@ -104,6 +104,7 @@ try {
   console.log(`Block confirmations = ${txStats.confirmations}`)
   console.log(`Transaction fee = ${txStats.feeSatoshi}`)
   console.log(`Transaction size = ${txStats.sizeBytes}`)
+  console.log(`Transaction size = ${txStats.dataHex}`)
 } catch (error) {
   console.error(error.message)
 }
