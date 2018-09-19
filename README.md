@@ -90,7 +90,7 @@ try {
 
 ### Get BTC Transaction Stats
 
-Get basic statistics about a transaction, returning an object containing the transaction id, block height, block hash, confirmation count, fee paid, and size.
+Get basic statistics about a transaction, returning an object containing the transaction id, block height, block hash, confirmation count, fee paid, size, and OP_RETURN value (if present).
 
 ```js
 var transactionId = 'b61b35f6f274663c4a1c062174925b97dc705cbfca9bd704e91c7d352f709e9c' // the transaction id to to get the stats for
@@ -104,7 +104,7 @@ try {
   console.log(`Block confirmations = ${txStats.confirmations}`)
   console.log(`Transaction fee = ${txStats.feeSatoshi}`)
   console.log(`Transaction size = ${txStats.sizeBytes}`)
-  console.log(`Data stored in OP_RETURN in hexa = ${txStats.dataHex}`)
+  console.log(`Transaction OP_RETURN value = ${txStats.opReturn}`)
 } catch (error) {
   console.error(error.message)
 }
