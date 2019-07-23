@@ -1,5 +1,7 @@
 # blockchain-anchor
 
+## This project is no longer active. It has been replaced with https://github.com/Tierion/btc-bridge
+
 [![JavaScript Style Guide](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
 
 [![npm](https://img.shields.io/npm/l/blockchain-anchor.svg)](https://www.npmjs.com/package/blockchain-anchor)
